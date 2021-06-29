@@ -170,7 +170,7 @@ def run_sim(param_subset):
 
 
 # Parallelized simulation running
-def run_parallel(params, cpus)
+def run_parallel(params, cpus):
     dfs = df_chunker(params, cpus-1)
 
     start = time.time()
@@ -202,12 +202,13 @@ if __name__ == "__main__":
     serum_con = np.logspace(-2, 1.3, 25)
 
     # On/off components of model
-    # link 9: 0 for off, 1 for 9a, 2 for 9b
+    # link 9: 0 for off, 1 for 9a, 2 for 9b. The rest are 0 for off, 1 for on
     # Most robust: states = [1, 1, 0, 1, 1, 1, 0, 2, 0]
+    # Minimal: states = [0, 1, 0, 1, 1, 1, 0, 0, 0]
     # Links:  2  3  4  5  6  7  8  9  10
     states = [0, 1, 0, 1, 1, 1, 0, 0, 0]
 
-    # For switch and bistability
+    # parameter for switch and bistability. See
     lmda = .1
 
     run_parallel(params, cpus=None)
