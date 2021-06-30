@@ -1,0 +1,9 @@
+name: simEnv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - scipy
+  - joblib
+  - pandas
+  - numpy
