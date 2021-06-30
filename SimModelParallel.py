@@ -6,6 +6,7 @@ from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
 import itertools as it
+import datetime
 
 
 # Positive Michaelis-Menten equation
@@ -213,5 +214,8 @@ if __name__ == "__main__":
 
     # Range of models to run (out of 768 total)
     model_range = ()
+    
+    with open("runs.log", "a") as log:
+        log.write(f"{datetime.datetime.now()}, model range: {model_range}\n")
     
     rebi = run_parallel(params, -1, model_range)
