@@ -3,41 +3,9 @@
 
 from scipy.integrate import odeint
 from joblib import Parallel, delayed
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import random
-import time
 import itertools as it
-
-
-# Plot the relevent outputs used downstream.
-# input_obj: for type 1, input odeint output. for type 2, just look at the code to figure out input... 
-# plot_type: 1 for concentration plots, 2 for EE steady state plots
-
-def plotter(input_obj, plot_type):
-    if plot_type == 1:
-        EE = input_obj[:, 0]
-        MD = input_obj[:, 1]
-        RP = input_obj[:, 2]
-
-        plt.plot()
-        plt.title('Concentrations Plot')
-        plt.xlabel('Time (hrs)')
-        plt.ylabel('Concentration (nM/mL)')
-        plt.plot(t, EE, label="EE")
-        plt.plot(t, MD, label="MD")
-        plt.plot(t, RP, label="RP")
-        plt.legend()
-        plt.show()
-
-    if plot_type == 2:
-        plt.plot(input_obj[0][0], input_obj[0][1], label="EE On")
-        plt.plot(input_obj[1][0], input_obj[1][1], label="EE Off")
-        plt.legend(loc="best")
-        plt.ylabel("EE_SS")
-        plt.xlabel("log10 [S]")
-        plt.show()
 
 
 # Positive Michaelis-Menten equation
@@ -217,8 +185,8 @@ def run_sim(states):
 
 # Parallelized simulation running
 
-def run_parallel(params, cpus, run_range):
-    lower, upper = run_range
+def run_parallel(params, cpus, model_range):
+    lower, upper = model_range
     results = Parallel(n_jobs=cpus)(delayed(run_sim)(model) for model in model_library()[lower:upper])
     
     for result in results:
@@ -229,7 +197,7 @@ def run_parallel(params, cpus, run_range):
 
 
 if __name__ == "__main__":
-    # --- Loading parameters, states, initial conditions, time steps, and serum concentrations ---
+    # --- Necessary global variables ---
     # Load parameters
     params = pd.read_csv("parameters.csv")
 
@@ -243,6 +211,7 @@ if __name__ == "__main__":
     # .01 to 20 serum concentration
     serum_con = np.logspace(-2, 1.3, 25)
 
-    start = time.time()
-    rebi = run_parallel(params, -1, (0, 2))
-    print(f"Total runtime: {round((time.time() - start)/60, 3)}min")
+    # Range of models to run (out of 768 total)
+    model_range = ()
+    
+    rebi = run_parallel(params, -1, model_range)
