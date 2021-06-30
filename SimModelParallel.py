@@ -219,3 +219,6 @@ if __name__ == "__main__":
         log.write(f"{datetime.datetime.now()}, model range: {model_range}\n")
     
     rebi = run_parallel(params, -1, model_range)
+    
+    with open("runs.log", "a") as log:
+        log.write(f"{datetime.datetime.now()}, model range: {model_range} completed.\n")
