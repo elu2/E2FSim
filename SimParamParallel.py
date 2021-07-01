@@ -2,13 +2,11 @@
 # coding: utf-8
 
 import csv
+import datetime
 from scipy.integrate import odeint
 from joblib import Parallel, delayed
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import random
-import time
 
 
 def model_name(model):
@@ -220,6 +218,13 @@ if __name__ == "__main__":
     # Minimal: states = [0, 1, 0, 1, 1, 1, 0, 0, 0]
     # Links:  2  3  4  5  6  7  8  9  10
     states = [1, 1, 1, 1, 1, 1, 1, 2, 1]
-
+    
+    # Log start of run
+    with open("runs.log", "a") as log:
+        log.write(f"{datetime.datetime.now()}, running single model {states} in {chunks} chunks.\n")
+    
     run_parallel(params, chunks=100)
     
+    # Log start of run
+    with open("runs.log", "a") as log:
+        log.write(f"{datetime.datetime.now()}, running single model {states} in {chunks} chunks completed.\n")
