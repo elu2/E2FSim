@@ -219,11 +219,13 @@ if __name__ == "__main__":
     # Links:  2  3  4  5  6  7  8  9  10
     states = [1, 1, 1, 1, 1, 1, 1, 2, 1]
     
+    chunks = 96
+    
     # Log start of run
     with open("runs.log", "a") as log:
         log.write(f"{datetime.datetime.now()}, running single model {states} in {chunks} chunks.\n")
     
-    run_parallel(params, chunks=100)
+    run_parallel(params, chunks=chunks)
     
     # Log start of run
     with open("runs.log", "a") as log:
