@@ -156,7 +156,7 @@ def run_sim(param_subset):
         # Update parameters from row of df
         globals().update(param_subset.iloc[i].to_dict())
         
-        set_dict = param_subset.iloc[i]
+        set_dict = param_subset.iloc[i].to_dict()
         row_vals = list(set_dict.values())
 
         EE_SS_on = []
