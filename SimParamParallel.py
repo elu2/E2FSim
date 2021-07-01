@@ -184,7 +184,7 @@ def run_sim(param_subset):
         else:
             row_vals.append(0)
             
-        with open(model_name(), 'a+', newline='') as file:
+        with open(model_name(states), 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
