@@ -47,15 +47,15 @@ beta_class = ["beta_MD", "beta_RP", "beta_EE"]
 n_sim = 20000
 for i in range(n_sim):
     for param in K_class:
-        params[param].append(round(exp(uniform(log(K_range[0]), log(K_range[1])))), 4)
+        params[param].append(round(exp(uniform(log(K_range[0]), log(K_range[1]))), 4))
 
     for param in n_class:
-        params[param].append(round(exp(uniform(log(n_range[0]), log(n_range[1])))), 4)
+        params[param].append(round(exp(uniform(log(n_range[0]), log(n_range[1]))), 4))
 
     for param in tau_class:
-        params[param].append(round(exp(uniform(log(tau_range[0]), log(tau_range[1])))), 4)
+        params[param].append(round(exp(uniform(log(tau_range[0]), log(tau_range[1]))), 4))
 
     for param in beta_class:
-        params[param].append(round(exp(uniform(log(beta_range[0]), log(beta_range[1])))), 4)
+        params[param].append(round(exp(uniform(log(beta_range[0]), log(beta_range[1]))), 4))
 
 pd.DataFrame(params).to_csv("parameters.csv", index=False)
