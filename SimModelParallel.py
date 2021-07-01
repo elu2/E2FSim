@@ -215,10 +215,12 @@ if __name__ == "__main__":
     # Range of models to run (out of 768 total)
     model_range = ()
     
+    # Log start and range of run
     with open("runs.log", "a") as log:
         log.write(f"{datetime.datetime.now()}, model range: {model_range}\n")
     
     rebi = run_parallel(params, -1, model_range)
     
+    # Update log if completed
     with open("runs.log", "a") as log:
         log.write(f"{datetime.datetime.now()}, model range: {model_range} completed.\n")
