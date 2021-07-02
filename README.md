@@ -8,6 +8,8 @@ Will have to manually update the model ranges by editing the python file.
 
 When running parallel across many models or within 1 model, run the respective dataframe-initializing script.
 
+Run the parameter df initiator script before generating parameters. Takes about 160min to generate 10M parameters.
+
 ### SimParamParallel vs SimModelParallel
 SimParamParallel breaks up a set of parameter sets and runs them in parallel. Ideal for a single model with a large parameter set (>20,000).
 Manually change the number of chunks to break the set of parameters up.
