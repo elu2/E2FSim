@@ -1,0 +1,52 @@
+---
+title: "Distribution Fit"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/UAL-Laptop/Downloads/")
+library(data.table)
+library(reshape2)
+library(evd)
+library(skewt)
+```
+
+```{r}
+biSubset <- fread("biSubset.csv")
+```
+
+```{r}
+req_n <- 100000
+
+k_10_dist <- function()
+frechet_vec <- NULL
+while (length(frechet_vec) < req_n){
+  rf_base <- rfrechet(100000, -1, 1, 2.5)
+  mask <- (rf_base <= 1) & (rf_base >= 0)
+  rf_masked <- rf_base[mask]
+  frechet_vec <- c(frechet_vec, rf_masked)
+}
+
+frechet_vec <- frechet_vec[1:req_n]
+length(frechet_vec)
+plot(density(frechet_vec))
+```
+
+
+```{r}
+plot(density(biSubset$K_10))
+```
+
+```{r}
+uf <- dfrechet(u, 0, 0.6, 0.8)
+plot(density(log10(biSubset$K_10)))
+lines(log10(u), uf, col="red")
+```
+
+```{r}
+u <- sort(runif(10000, 0, 1))
+csq <- dskt(u, df=.01, gamma=4)
+plot(density(biSubset$K_10))
+plot(density(csq))
+```
