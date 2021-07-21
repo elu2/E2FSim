@@ -1,6 +1,5 @@
 from scipy.stats import weibull_min as frechet
 from scipy.stats import loguniform as lu
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -98,9 +97,9 @@ for param in K_class:
     elif param == "K_8":
         params[param] = rfrechet_gen(n_params, param, xmin=K_range[0], xmax=K_range[1])
     elif param == "K_9":
-        params[param] = list(lu.rvs(K_range[0], K_range[1], size=n_params))
-    else:
         params[param] = list(lu.rvs(.01, 0.155, size=n_params))
+    else:
+        params[param] = list(lu.rvs(K_range[0], K_range[1], size=n_params))
     
 for param in n_class:
     if param == "n_8":
