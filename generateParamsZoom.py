@@ -68,6 +68,8 @@ def rfrechet_gen(req_n, param_name, xmin=0.01, xmax=1):
         
         rfrechet = rfrechet[:req_n]
 
+        return rfrechet
+
     if param_name == "n_8":
         rfrechet = []
         while len(rfrechet) < req_n:
@@ -77,6 +79,8 @@ def rfrechet_gen(req_n, param_name, xmin=0.01, xmax=1):
             rfrechet.extend(in_range)
         
         rfrechet = rfrechet[:req_n]
+        
+        return rfrechet
     
     if param_name == "beta_MD":
         rfrechet = []
