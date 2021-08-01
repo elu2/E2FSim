@@ -4,6 +4,7 @@ from scipy.integrate import odeint
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
+import os
 
 params = {
     "k_E": 0.4,
