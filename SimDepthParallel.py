@@ -146,16 +146,16 @@ def run_sim(param_subset):
             csv_writer.writerow(row_vals)
 
 
+# Time steps
+hours = 200
+t = np.linspace(0, hours, num=100)
+
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
 serum_con = np.linspace(0.02, 20, 100)
-
-# Time steps
-hours = 200
-t = np.linspace(0, hours, num=100)
 
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
