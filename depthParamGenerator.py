@@ -1,3 +1,5 @@
+# Generates parameters for quiescence depth analysis on a single-parameter basis.
+
 import pandas as pd
 import numpy as np
 
