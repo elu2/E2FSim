@@ -160,6 +160,11 @@ serum_con = np.linspace(0.02, 20, 100)
 hours = 200
 t = np.linspace(0, hours, num=100)
 
+with open("runs.log", "a") as log:
+    log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
+
 df_list, df_names = df_lister()
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in df_list)
-            
+
+with open("runs.log", "a") as log:
+    log.write(f"{datetime.datetime.now()}, running depth analysis completed.\n")
