@@ -1,12 +1,9 @@
+import csv
+import datetime
 from scipy.integrate import odeint
-import pandas as pd
 from joblib import Parallel, delayed
-import matplotlib.pyplot as plt
-import os
 import numpy as np
 import pandas as pd
-import random
-import time
 
 params = {
     "k_E": 0.4,
