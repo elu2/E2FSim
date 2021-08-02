@@ -76,5 +76,5 @@ for param_key in params.keys():
         else:
             params[base_key] = list(np.full(reps, base[base_key]))
     
-    pd.DataFrame(params).to_csv(f"./depthLib/{param_key}{i}depth.csv")
+    pd.DataFrame(params).to_csv(f"./depthLib/{param_key}{i}depth.csv", index=False)
     i += 1
