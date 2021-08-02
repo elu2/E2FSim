@@ -137,7 +137,11 @@ def run_sim(param_subset):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
 
-        dd = [round(x, 4) for x in delta_dist(EE_SS_on, EE_SS_off, serum_con)]
+        try:
+            dd = [round(x, 4) for x in delta_dist(EE_SS_on, EE_SS_off, serum_con)]
+        except TypeError:
+            dd = [None, None, None]
+
         row_vals.extend(dd)
         
         with open("baseDepth.csv", 'a+', newline='') as file:
