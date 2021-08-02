@@ -81,8 +81,6 @@ def delta_dist(EE_SS_on, EE_SS_off, serum_con):
 
 
 def systems(X, t, S):
-    globals().update(params)
-    
     # ODEs as vector elements
     M = X[0]
     CD = X[1]
