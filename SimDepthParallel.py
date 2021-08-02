@@ -151,6 +151,9 @@ t = np.linspace(0, hours, num=100)
 
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
+
+# Load base parameters for E2F on initial conditions
+globals().update(params)
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
