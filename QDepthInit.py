@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-colnames = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'K_S', 'k_CE', 'k_I', 'd_M', 'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'k_P', 'k_DP', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P', ]
+colnames = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'K_S', 'k_CE', 'k_I', 'd_M', 'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'k_P', 'k_DP', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P', "dOnOff", "off_th", "on_th"]
 init_df = pd.DataFrame(columns=colnames)
 
 
