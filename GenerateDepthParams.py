@@ -66,6 +66,7 @@ params = {
 
 scalars = np.linspace(lower_oom, upper_oom, num=reps)
 
+i = 0
 for param_key in params.keys():
     for base_key in base.keys():
         if base_key == param_key:
@@ -75,4 +76,5 @@ for param_key in params.keys():
         else:
             params[base_key] = list(np.full(reps, base[base_key]))
     
-    pd.DataFrame(params).to_csv("./depthLib/" + param_key + "_depth.csv")
+    pd.DataFrame(params).to_csv(f"./depthLib/{param_key}{i}depth.csv")
+    i += 1
