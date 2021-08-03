@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-reps = 2000
+reps = 200
 lower_oom = 0.01
 upper_oom = 100
 
@@ -60,21 +60,21 @@ params = {
     "K_CD": [],
     "K_CE": [],
     "K_RP": [],
-    "K_P": []
+    "K_P": [],
+    "an_type": []
 }
 
 
 scalars = np.linspace(lower_oom, upper_oom, num=reps)
 
-i = 0
-for param_key in params.keys():
+for param_key in list(params.keys())[:-1]:
+    params["an_type"].extend([param_key] * reps)
     for base_key in base.keys():
         if base_key == param_key:
             scaled_vec = list(scalars * base[base_key])
-            params[base_key] = scaled_vec
+            params[base_key].extend(scaled_vec)
             
         else:
-            params[base_key] = list(np.full(reps, base[base_key]))
+            params[base_key].extend(list(np.full(reps, base[base_key])))
     
-    pd.DataFrame(params).to_csv(f"./depthLib/{param_key}{i}depth.csv", index=False)
-    i += 1
+pd.DataFrame(params).to_csv("depthParameters.csv", index=False)
