@@ -4,10 +4,7 @@ from scipy.integrate import odeint
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
-import glob
 import os
-
-base_path = "/xdisk/guangyao/elu2/E2FSim/"
 
 params = {
     "k_E": 0.4,
@@ -46,6 +43,8 @@ def mm(num_k, num_con, denom_K, denom_con):
     
     return val
     
+
+# Behavior of serum concentration. Vestigial.
     
 def serum(time):
     R = 100000
@@ -107,6 +106,8 @@ def systems(X, t, S):
         
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
 
+
+# Chunk parameters for parallel processing
 
 def df_chunker(full_df, chunks):
     dfs = list()
