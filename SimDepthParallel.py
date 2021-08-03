@@ -148,7 +148,7 @@ def run_sim(param_subset, name):
 
         row_vals.extend(dd)
         
-        with open(f"./depthLib/{name[:-9]}analysis.csv", 'a+', newline='') as file:
+        with open(f"{name[:-9]}analysis.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
@@ -170,6 +170,7 @@ serum_con = np.linspace(0.02, 20, 1000)
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
 
+# Working directory changed to depthLib here
 df_list, df_names = df_lister()
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df, name) for sub_df, name in zip(df_list, df_names))
 
