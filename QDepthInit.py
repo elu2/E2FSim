@@ -10,7 +10,7 @@ init_df = pd.DataFrame(columns=colnames)
 
 def checker(file_name):
     if os.path.exists(file_name):
-        option = input("File exists. Overwrite? [y/n]").lower()
+        option = input(f"{file_name} exists. Overwrite? [y/n]").lower()
         if option == "y":
             init_df.to_csv(file_name, index=False)
             print("New empty file created.")
