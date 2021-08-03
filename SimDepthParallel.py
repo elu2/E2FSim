@@ -116,13 +116,13 @@ def df_chunker(full_df, chunks):
     for i in range(chunks - 1):
         dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
 
-    if params.shape[0] % chunks != 0:
+    if params.depth_params[0] % chunks != 0:
         dfs.append(full_df.iloc[interval_size * chunks: , :])
 
     return dfs
 
 
-def run_sim(param_subset, name):
+def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
 
@@ -146,7 +146,7 @@ def run_sim(param_subset, name):
 
         row_vals.extend(dd)
         
-        with open("depthAnalysis.csv", 'a+', newline='') as file:
+        with open("depthRun.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
@@ -168,9 +168,9 @@ serum_con = np.linspace(0.02, 20, 1000)
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
 
-# Working directory changed to depthLib here
-df_list, df_names = df_lister()
-Parallel(n_jobs=-1)(delayed(run_sim)(sub_df, name) for sub_df, name in zip(df_list, df_names))
+depth_params =  pd.read_csv("depthParameters.csv")
+dfs = df_chunker(depth_params, 26)
+Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
 
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis completed.\n")
