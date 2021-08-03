@@ -120,7 +120,7 @@ def df_lister():
     return [df_list, df_names]
 
 
-def run_sim(param_subset):
+def run_sim(param_subset, name):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
 
@@ -144,7 +144,7 @@ def run_sim(param_subset):
 
         row_vals.extend(dd)
         
-        with open("baseDepth.csv", 'a+', newline='') as file:
+        with open(f"{name[:-8]}analysis.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
@@ -167,7 +167,7 @@ with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
 
 df_list, df_names = df_lister()
-Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in df_list)
+Parallel(n_jobs=-1)(delayed(run_sim)(sub_df, name) for sub_df, name in zip(df_list, df_names))
 
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis completed.\n")
