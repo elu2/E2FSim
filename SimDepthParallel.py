@@ -161,7 +161,7 @@ globals().update(params)
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
-serum_con = np.linspace(0.02, 20, 100)
+serum_con = np.linspace(0.02, 20, 1000)
 
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
