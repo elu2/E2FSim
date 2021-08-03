@@ -108,20 +108,18 @@ def systems(X, t, S):
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
 
 
-def df_lister():
-    os.chdir(base_path + "depthLib/")
-    depth_params = glob.glob("*depth.csv")
-    df_list = []
-    df_names = []
+def df_chunker(full_df, chunks):
+    dfs = list()
+    interval_size = full_df.shape[0]//chunks
+    dfs.append(full_df.iloc[0:interval_size, :])
 
-    for set_name in depth_params:
-        df_list.append(pd.read_csv(set_name))
-        df_names.append(set_name)
+    for i in range(chunks - 1):
+        dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
 
-    df_list = tuple(df_list)
-    df_names = tuple(df_names)
-    
-    return [df_list, df_names]
+    if params.shape[0] % chunks != 0:
+        dfs.append(full_df.iloc[interval_size * chunks: , :])
+
+    return dfs
 
 
 def run_sim(param_subset, name):
@@ -148,7 +146,7 @@ def run_sim(param_subset, name):
 
         row_vals.extend(dd)
         
-        with open(f"{name[:-9]}analysis.csv", 'a+', newline='') as file:
+        with open("depthAnalysis.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
