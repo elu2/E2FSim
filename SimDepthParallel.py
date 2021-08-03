@@ -144,7 +144,7 @@ def run_sim(param_subset, name):
 
         row_vals.extend(dd)
         
-        with open(f"{name[:-9]}analysis.csv", 'a+', newline='') as file:
+        with open(f"./depthLib/{name[:-9]}analysis.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
