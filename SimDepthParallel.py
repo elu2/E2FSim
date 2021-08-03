@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import os
 
+base_path = "/xdisk/guangyao/elu2/E2FSim/"
+
 params = {
     "k_E": 0.4,
     "k_M": 1.0,
@@ -106,12 +108,13 @@ def systems(X, t, S):
 
 
 def df_lister():
-    depth_params = os.listdir("./depthLib/")
+    os.chdir(base_path + "depthLib/")
+    depth_params = glob.glob("*depth.csv")
     df_list = []
     df_names = []
 
     for set_name in depth_params:
-        df_list.append(pd.read_csv("./depthLib/" + set_name))
+        df_list.append(pd.read_csv(set_name))
         df_names.append(set_name)
 
     df_list = tuple(df_list)
