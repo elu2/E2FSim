@@ -65,7 +65,7 @@ params = {
 }
 
 
-scalars = np.linspace(lower_oom, upper_oom, num=reps)
+scalars = np.logspace(np.log10(lower_oom), np.log10(upper_oom), num=reps)
 
 for param_key in list(params.keys())[:-1]:
     params["an_type"].extend([param_key] * reps)
