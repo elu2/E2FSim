@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 reps = 200
-lower_oom = 0.01
-upper_oom = 100
+lower_oom = 0.1
+upper_oom = 10
 
 base = {
     "k_E": 0.4,
