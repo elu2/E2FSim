@@ -10,7 +10,7 @@ def checker(file_name):
     if os.path.exists(file_name):
         option = input("File exists. Overwrite? [y/n]").lower()
         if option == "y":
-            init_df.to_csv({fle_name, index=False)
+            init_df.to_csv(file_name, index=False)
             print("New empty file created.")
         else:
             print("Previous file retained.")
