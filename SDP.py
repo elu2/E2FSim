@@ -169,13 +169,13 @@ globals().update(params)
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
-serum_con = np.linspace(0.02, 20, 1000)
+serum_con = np.linspace(0, 50, 5000)
 
 with open("runs.log", "a") as log:
     log.write(f"{datetime.datetime.now()}, running depth analysis.\n")
 
 depth_params =  pd.read_csv("depthParameters.csv")
-dfs = df_chunker(depth_params, 26)
+dfs = df_chunker(depth_params, 94)
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
 
 with open("runs.log", "a") as log:
