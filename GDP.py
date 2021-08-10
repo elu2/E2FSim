@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-reps = 200
+reps = 100
 lower_oom = 0.1
 upper_oom = 10
 
