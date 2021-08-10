@@ -1,3 +1,5 @@
+# SimDepthParallel: Runs simulations for quiescence depth analysis.
+
 import csv
 import datetime
 from scipy.integrate import odeint

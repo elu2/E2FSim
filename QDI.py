@@ -1,3 +1,5 @@
+# QuiescenceDepthInit: Initializes depthRun.csv file which SDP.py writes into.
+
 import pandas as pd
 import os
 

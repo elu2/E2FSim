@@ -1,3 +1,5 @@
+# GenerateDepthParameters: Generates parameters for quiescence depth analysis
+
 import pandas as pd
 import numpy as np
 
