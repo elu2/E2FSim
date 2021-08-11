@@ -1,3 +1,5 @@
+# Initializes csv file for 2017 simulation results (bistable, rebi)
+
 import pandas as pd
 import os
 
