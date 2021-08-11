@@ -9,10 +9,10 @@ if os.path.exists(f"results2017.csv"):
     option = input("File exists. Overwrite? [y/n]").lower()
     if option == "y":
         pd.DataFrame(columns=col_names).to_csv(f"results2017.csv", index=False)
-        print(f"New empty file of model {model} created.")
+        print(f"New empty file created for SPP2017.py")
     else:
         print("Previous file retained.")
 
 else:
     pd.DataFrame(columns=col_names).to_csv(f"results2017.csv", index=False)
-    print(f"New empty file of model 2017 model created.")
+    print(f"New empty file created for SPP2017.py")
