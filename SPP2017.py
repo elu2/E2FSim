@@ -28,7 +28,7 @@ def df_chunker(full_df, chunks):
     for i in range(chunks - 1):
         dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
 
-    if depth_params.shape[0] % chunks != 0:
+    if params.shape[0] % chunks != 0:
         dfs.append(full_df.iloc[interval_size * chunks: , :])
 
     return dfs
