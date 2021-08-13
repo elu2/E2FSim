@@ -2,19 +2,12 @@
 # Generate params like GDP.py except from different seeding.
 
 import pandas as pd
+import numpy as np
 import os
 
-# Check if log is missing.
-if not os.path.exists(f"GDPR.log"):
-    with open("GDPR.log", "w") as file:
-        file.write(str(0))
-
-index = None
-with open("GDPR.log", "r") as file:
-    index = int(file.readline())
-    
-bistable_sets = pd.read_csv("bistableResults2017.csv")
-base = bistable_sets.iloc[index, :-2].to_dict()
+reps = 100
+lower_oom = 0.1
+upper_oom = 10
 
 params = {
     "k_E": [],
@@ -50,17 +43,22 @@ params = {
 
 scalars = np.logspace(np.log10(lower_oom), np.log10(upper_oom), num=reps)
 
-for param_key in list(params.keys())[:-1]:
-    params["an_type"].extend([param_key] * reps)
-    for base_key in base.keys():
-        if base_key == param_key:
-            scaled_vec = list(scalars * base[base_key])
-            params[base_key].extend(scaled_vec)
-            
-        else:
-            params[base_key].extend(list(np.full(reps, base[base_key])))
-    
-pd.DataFrame(params).to_csv(f"depthParameters{index}.csv", index=False)
+bistable_sets = pd.read_csv("bistableResults2017.csv")
 
-with open("GDPR.log", "w") as file:
-    file.write(str(index + 1))
+if not os.path.exists("./depthParams/"):
+    os.makedirs("./depthParams/")
+
+for i in range(bistable_sets.shape[0]):
+    base = bistable_sets.iloc[i, :-2].to_dict()
+
+    for param_key in list(params.keys())[:-1]:
+        params["an_type"].extend([param_key] * reps)
+        for base_key in base.keys():
+            if base_key == param_key:
+                scaled_vec = list(scalars * base[base_key])
+                params[base_key].extend(scaled_vec)
+
+            else:
+                params[base_key].extend(list(np.full(reps, base[base_key])))
+
+    pd.DataFrame(params).to_csv(f"./depthParams/DP{i}.csv", index=False)
