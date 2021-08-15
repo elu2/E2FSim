@@ -150,7 +150,7 @@ for i in range(n):
     # If a file was incomplete, skip and log it. Otherwise continue.
     if i in incomp_list:
         with open("runs.log", "a") as log:
-            log.write(f"Index {i} incomplete. Analysis skipped.")
+            log.write(f"Index {i} incomplete. Analysis skipped.\n")
         continue
     else:
         data = pd.read_csv(f"depthRuns/DR{i}.csv")
