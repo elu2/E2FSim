@@ -139,9 +139,21 @@ def assigner(data, param_names):
     return (deeper, shallower, narrower, dne)
 
 
+# Check if files are incomplete.
+incomp_list = []
+for i in range(n):
+    with open(f"depthRuns/DR{i}.csv", "r") as file:
+        if len(file.readlines()) != 2801:
+            incomp_list.append(i)
 
 for i in range(n):
-    data = pd.read_csv(f"depthRuns/DR{i}.csv")
+    # If a file was incomplete, skip and log it. Otherwise continue.
+    if i in incomp_list:
+        with open("runs.log", "a") as log:
+            log.write(f"Index {i} incomplete. Analysis skipped.")
+        continue
+    else:
+        data = pd.read_csv(f"depthRuns/DR{i}.csv")
 
     deeper, shallower, narrower, dne = assigner(data, param_names)
 
