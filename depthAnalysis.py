@@ -16,14 +16,14 @@ for name in param_names:
 
 scalars = np.logspace(np.log10(0.1), np.log10(10), num=100)
 
-n = 20
+n = 100
 
 
 # curve_dists: Column of spaces between curves
 # thresholds: activation thresholds
 # show_plot: visualization of spaces
 
-# Returns a set of 2 lists. First list is whether or not the net change is increase or decrease 
+# Returns a set of 2 lists. First list is whether or not the net change is increase or decrease
 # for increasing and decreasing values of parameters. Second list is the proportion of parameter
 # values that the relative distance between on and off curves are getting smaller.
 
@@ -31,15 +31,15 @@ def inc_dec(curve_dists, thresholds, name, show_plot=False):
     # Calculate the relative distance between curves given thresholds.
     # threshold = 1 if calculating just distance between thresholds
     relative_dists = list(np.divide(curve_dists, thresholds))
-    
+
     # Split up lower and upper indices into separate lists. Represents scalar multiples > 1 and < 1
     lower = relative_dists[:50]
     upper = relative_dists[50:]
-    
+
     # Remove nan from lists
     clower = [x for x in lower if np.isnan(x) == False]
     cupper = [x for x in upper if np.isnan(x) == False]
-    
+
     # Lower 50 calculations
     # If clower has no values (reciprocated)
     if len(clower) < 2:
@@ -53,12 +53,12 @@ def inc_dec(curve_dists, thresholds, name, show_plot=False):
             if clower[i + 1] < clower[i]:
                 lcounter += 1
         lprop = lcounter / len(clower)
-        
+
         # Determine overall behavior from last index to first (reciprocated)
         lower_inc = "+"
         if clower[-1] > clower[0]:
             lower_inc = "-"
-    
+
     # Upper 50 calculations
     if len(cupper) < 2:
         ucounter = 0
@@ -69,18 +69,18 @@ def inc_dec(curve_dists, thresholds, name, show_plot=False):
         for i in range(len(cupper) - 1):
             if cupper[i + 1] >= cupper[i]:
                 ucounter += 1
-        uprop = ucounter / len(cupper)  
-        
+        uprop = ucounter / len(cupper)
+
         upper_inc = "+"
         if cupper[-1] < cupper[0]:
             upper_inc = "-"
-    
+
     if show_plot:
         plt.figure()
         plt.title(name)
         plt.plot(relative_dists)
         # plt.savefig(f'relDists/{param}.png')
-        
+
     return ([lower_inc, upper_inc], [lprop, uprop])
 
 
@@ -100,6 +100,7 @@ def assigner(data, param_names):
     # Shallower, deeper, and dne behaviors
     deeper = []
     shallower = []
+    narrower = []
     dne = []
 
     for key in data_dict.keys():
@@ -112,29 +113,22 @@ def assigner(data, param_names):
             shallower.append(key + "_dec")
         if data_dict[key][0][1] == "+" and data_dict[key][1][1] == "-":
             shallower.append(key + "_inc")
-        
+
         # for DNE
         if data_dict[key][0][0] == "." or data_dict[key][1][0] == ".":
             dne.append(key + "_dec")
-        if data_dict[key][0][1] == "." and data_dict[key][1][1] == ".":
-            dne.append(key + "_dec")
+        if data_dict[key][0][1] == "." or data_dict[key][1][1] == ".":
+            dne.append(key + "_inc")
 
+        if data_dict[key][0][0] == "-" and data_dict[key][1][0] == "+":
+            narrower.append(key + "_dec")
+        if data_dict[key][0][1] == "-" and data_dict[key][1][1] == "+":
+            narrower.append(key + "_inc")
+        if data_dict[key][0][0] == "-" and data_dict[key][1][0] == "-":
+            narrower.append(key + "_dec")
+        if data_dict[key][0][1] == "-" and data_dict[key][1][1] == "-":
+            narrower.append(key + "_inc")
 
-    # Narrower behaviors
-    relevant = deeper
-    relevant.extend(shallower)
-    relevant.extend(dne)
-
-    all_names = []
-    narrower = []
-
-    for key in data_dict.keys():
-        all_names.append(key + "_inc")
-        all_names.append(key + "_dec")
-
-    for name in all_names:
-        if name not in relevant:
-            narrower.append(name)
 
     return (deeper, shallower, narrower, dne)
 
