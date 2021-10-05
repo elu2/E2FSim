@@ -30,7 +30,7 @@ def fold_changes(df, base_df):
         for paramj in params:
             overall_fc[paramj] = [0]
         
-        param_df = df[df["an_type"]==param].reset_index(drop=True)
+        param_df = df[df["on_th"]==param].reset_index(drop=True)
 
         # Make zero columns for all but the current parameter
         zero_cols = params.copy()
@@ -39,17 +39,20 @@ def fold_changes(df, base_df):
         param_df[zero_cols] = zero_df
         param_df = param_df.dropna().reset_index(drop=True)
 
-        x1 = param_df[param].iloc[0]
+        try:
+            x1 = param_df[param].iloc[0]
+        except IndexError:
+            continue
         y1 = param_df[param].iloc[-1]
 
-        x2 = param_df["dOnOff"].iloc[0]
-        y2 = param_df["dOnOff"].iloc[-1]
+        x2 = param_df["on_th"].iloc[0]
+        y2 = param_df["on_th"].iloc[-1]
 
         fc1 = fold_change(x1, y1)
         fc2 = fold_change(x2, y2)
         
         overall_fc[param] = [fc1]
-        overall_fc["dOnOff"] = [fc2]
+        overall_fc["on_th"] = [fc2]
         
         overall_fc_df = pd.DataFrame(overall_fc)
         base_df = base_df.append(overall_fc_df)
