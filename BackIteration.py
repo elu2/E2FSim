@@ -7,15 +7,15 @@ import pandas as pd
 import os
 
 # Path to write iteration results out to. Make directory if doesn't already exist.
-write_path = "C:/Users/UAL-Laptop/Downloads/iterationResults/"
+write_path = "./iterationResults/"
 if not os.path.exists(write_path):
     os.makedirs(write_path)
 
 # Number of parameter sets to generate and simulate over
-size = 250
+size = 500
 
 # Number of chunks to split parameter set into for parallel processing.
-chunks = 5
+chunks = 94
 
 # Baseline parameter values from 2017 paper.
 params = {
@@ -158,7 +158,6 @@ def csv_init(path, from_df_names):
 
 
 def run_sim(param_subset):
-    path = "subsetResults.csv"
     bis_counter = 0
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
@@ -189,7 +188,7 @@ def run_sim(param_subset):
     return bis_counter
             
             
-def zoom_gen(p_params, n_params, unimp):
+def zoom_gen(p_params, n_params, unimp, size):
     # Generate parameters with certain narrowed parameter space
     generated = {}
     for param in n_params + p_params + unimp:
@@ -209,15 +208,17 @@ def zoom_gen(p_params, n_params, unimp):
     return generated_df
 
 
-for iteration in tqdm(range(len(param_names) - 1)):
-    # Initialized parameter classes as determined by a prior LASSO fit's coefficients. 28 total.
-    p_init = ['k_b', 'k_E', 'k_CD', 'k_CDS', 'd_R', 'k_M', 'd_I', 'k_CE', 'k_P1', 'k_P2']
-    n_init = ['k_RE', 'K_P2', 'd_CE', 'K_CE', 'K_S', 'k_DP', 'K_P1', 'd_RP', 'd_M', 'k_I', 'd_CD', 'K_CD', 'K_RP', 'K_M', 'd_E', 'k_R', 'K_E', 'd_RE']
+# Initialized parameter classes as determined by a prior LASSO fit's coefficients. 28 total.
+p_init = ['k_b', 'k_E', 'k_CD', 'k_CDS', 'd_R', 'k_M', 'd_I', 'k_CE', 'k_P1', 'k_P2']
+n_init = ['k_RE', 'K_P2', 'd_CE', 'K_CE', 'K_S', 'k_DP', 'K_P1', 'd_RP', 'd_M', 'k_I', 'd_CD', 'K_CD', 'K_RP', 'K_M', 'd_E', 'k_R', 'K_E', 'd_RE']
+
+# Loop through as many parameters as initialized
+for iteration in range(len(p_init + n_init) - 1):
     pn_comb = p_init + n_init
     unimp_init = list(set(param_names) - set(p_init) - set(n_init))
 
     rate_log = []
-    for i in tqdm(range(len(pn_comb))):
+    for i in range(len(pn_comb)):
         # Re-initialize parameter classes
         p_params = p_init.copy()
         n_params = n_init.copy()
@@ -261,11 +262,14 @@ for iteration in tqdm(range(len(param_names) - 1)):
 
     # Determine next parameter to revert parameter space
     nrev = rate_df.iloc[-1][0]
+    nrate = rate_df.iloc[-1][1]
 
     if nrev in p_init:
-        nrev_i = p_init.index(next_rev)
+        nrev_i = p_init.index(nrev)
         nrev = p_init.pop(nrev_i)
+        print(f"Next revert at {nrate} bistable rate: {nrev}")
 
     elif nrev in n_init:
-        nrev_i = n_init.index(next_rev)
+        nrev_i = n_init.index(nrev)
         nrev = n_init.pop(nrev_i)
+        print(f"Next revert at {nrate} bistable rate: {nrev}")
