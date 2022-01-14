@@ -10,9 +10,9 @@ import pandas as pd
 import os
 from tqdm import tqdm
 
-chunks = 2
+chunks = 94
 # Size of parameter sets to generate and simulate over
-size = 2
+size = 250
 # Number of times to zoom into max window of previous layer
 layers = 2
 # Number of windows per start, stop range. Fixed for all layers
