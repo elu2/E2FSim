@@ -10,9 +10,9 @@ import pandas as pd
 import os
 from tqdm import tqdm
 
-chunks = 94
+chunks = 2
 # Size of parameter sets to generate and simulate over
-size = 250
+size = 2
 # Number of times to zoom into max window of previous layer
 layers = 2
 # Number of windows per start, stop range. Fixed for all layers
@@ -261,30 +261,32 @@ for param in param_names:
     # Store all layers' data to plot later
     cumulative_midpts = []
     cumulative_brs = []
+    
     for l in range(layers):
-        save_dir = f"./SweepSearching/iteration{l+1}/"
+        save_dir = f"./SweepSearching/iteration{l}/"
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-
+        
+        layer_rates = []
         # Generate parameter sets and chunk for parallel processing
         dfs, steps = window_gen(param, size=size, start=start, stop=stop, num=iter_num)
         for df in dfs:
             df_chunks = df_chunker(df, chunks=chunks)
             bis_rate = Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in df_chunks)
             bis_rate = np.sum(np.array(bis_rate))/size
-            cumulative_brs.append(bis_rate)
+            cumulative_brs.append(bis_rate); layer_rates.append(bis_rate)
 
         # Calculate midpoints
         midpts = [np.mean([steps[i], steps[i+1]]) for i in range(len(steps)-1)]
         cumulative_midpts.extend(midpts)
 
-        # Record data
-        tabulate_window(steps, bis_rates, param, save_dir)
-
         # Index of max rate
-        i_max = np.argmax(bis_rates)
+        i_max = np.argmax(layer_rates)
         # Determine and update next iteration's start and stop
         start = steps[i_max]; stop = steps[i_max+1]
+
+        # Record data
+        tabulate_window(steps, layer_rates, param, save_dir)
 
     # plot, save cumulated results
     plot_rates(cumulative_midpts, cumulative_brs, param, save_dir)
