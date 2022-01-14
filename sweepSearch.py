@@ -10,13 +10,13 @@ import pandas as pd
 import os
 from tqdm import tqdm
 
-
+chunks = 94
 # Size of parameter sets to generate and simulate over
-size = 100
+size = 250
 # Number of times to zoom into max window of previous layer
 layers = 2
 # Number of windows per start, stop range. Fixed for all layers
-iter_num = 3
+iter_num = 4
 # Tuple of start, stop ranges for iteration 1.
 i1_start_stop = (0.1, 10)
 
@@ -61,6 +61,7 @@ t = np.linspace(0, hours, num=100)
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
 
+
 # Serum levels
 serum_con = np.linspace(0.02, 20, 100)
 
@@ -69,7 +70,7 @@ serum_con = np.linspace(0.02, 20, 100)
 
 def mm(num_k, num_con, denom_K, denom_con):
     val = (num_k * num_con) / (denom_K + denom_con)
-    
+
     return val
 
 
@@ -107,24 +108,24 @@ def cond_analysis(E2F_on, E2F_off):
     delta_EE_SS = []
     for SS_off, SS_on in zip(E2F_off, E2F_on):
         delta_EE_SS.append(SS_on - SS_off)
-        
+
     # Bistability conditions
     bistable_bool = False
     if sum([i > EE_min_max * .1 for i in delta_EE_SS]) >= 2 and switch:
         bistable_bool = True
     elif sum([i > EE_min_max * .2 for i in delta_EE_SS]) >= 1 and switch:
         bistable_bool = True
-    
+
     # Resettability conditions
     reset_bool = False
     if delta_EE_SS[0] <= .05:
         reset_bool = True
-    
+
     # Assess if both resettable and bistable
     rebi_bool = 0
-    if reset_bool and bistable_bool: 
+    if reset_bool and bistable_bool:
         rebi_bool = 1
-    
+
     return rebi_bool, int(bistable_bool)
 
 
@@ -138,10 +139,10 @@ def systems(X, t, S):
     RP = X[5]
     RE = X[6]
     I = X[7]
-    
+
     kKpP1 = k_P1 / (K_P1 + I)
     kKpP2 = k_P2 / (K_P2 + I)
-        
+
     dMdt = mm(k_M, S, K_S, S) - (d_M * M)
     dCDdt = mm(k_CD, M, K_M, M) + mm(k_CDS, S, K_S, S) - d_CD * CD
     dCEdt = mm(k_CE, E, K_E, E) - (d_CE * CE)
@@ -150,10 +151,10 @@ def systems(X, t, S):
     dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
     dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
     dIdt = k_I - (d_I * I)
-        
+
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
-    
-    
+
+
 def csv_init(path, from_df_names):
     col_names = list(from_df_names.columns) + ["bistable"]
     pd.DataFrame(columns=col_names).to_csv(path, index=False)
@@ -186,11 +187,11 @@ def run_sim(param_subset):
 
         rebi_bool, bistable_bool = cond_analysis(E2F_on, E2F_off)
 
-        if bistable_bool: 
+        if bistable_bool:
             bis_counter += 1
 
     return bis_counter
-            
+
 
 def window_gen(spec_param, size, start, stop, num):
     """
@@ -199,7 +200,7 @@ def window_gen(spec_param, size, start, stop, num):
     start: beginning of logspace of multipliers to iterate through
     stop: end of logspace of multipliers to iterate through
     num: number of windows to iterate through (odd, preferrably)
-    
+
     return: list of dataframes size of num - 1
     """
     # Generate non-focus parameters in loguniform
@@ -212,7 +213,7 @@ def window_gen(spec_param, size, start, stop, num):
     # Logspace of iteration range
     steps = np.logspace(np.log10(start), np.log10(stop), num=num)
     generated_dfs = []
-    
+
     # Generate parameters in uniform for each window
     for i in range(len(steps)-1):
         sub_gen = base.copy()
@@ -220,22 +221,27 @@ def window_gen(spec_param, size, start, stop, num):
         sub_gen[spec_param].extend(np.random.uniform(steps[i], steps[i+1], size=size) * params[spec_param])
         sub_df = pd.DataFrame(sub_gen)
         generated_dfs.append(pd.DataFrame(sub_gen))
-    
+
     return generated_dfs, steps
 
 
-# Save figure of bistable rates
-def plot_rates(steps, bis_rates, param, save_dir):
+# Save figure of bistable rates with x-axis of window midpoint
+def plot_rates(midpts, bis_rates, param, save_dir):
+    # Sort the values to display
+    plot_dict = {"midpt": midpts, "bis_rates": bis_rates}
+    plot_axes = pd.DataFrame(plot_dict).sort_values("midpt")
+    midpts = plot_axes["midpt"].tolist(); bis_rates = plot_axes["bis_rates"].tolist()
+
     plt.figure()
-    plt.plot(steps[1:], bis_rates)
+    plt.plot(midpts, bis_rates)
     plt.title(f"{param} Sweeping")
     plt.ylabel("Bistable Rate")
     plt.xlabel("Window Stop")
     plt.xscale("log")
     plt.tight_layout()
     plt.savefig(f"{save_dir + param}.jpg", transparent=False)
-    
-    
+
+
 # Save csv of bistable rates and window
 def tabulate_window(steps, bis_rates, param, save_dir):
     windows_dict = {
@@ -246,28 +252,31 @@ def tabulate_window(steps, bis_rates, param, save_dir):
 
     window_df = pd.DataFrame(windows_dict)
     window_df.to_csv(f"{save_dir + param}.csv")
-    
+
 
 for param in param_names:
     # Initialize iteration 1 starts and stops for each parameter
     start, stop = i1_start_stop
-    
+
     # Store all layers' data to plot later
-    cumulative_steps = []
+    cumulative_midpts = []
     cumulative_brs = []
     for l in range(layers):
-        save_dir = f"./iteration{l+1}/"
+        save_dir = f"./SweepSearching/iteration{l+1}/"
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        
-        # Generate parameter sets
+
+        # Generate parameter sets and chunk for parallel processing
         dfs, steps = window_gen(param, size=size, start=start, stop=stop, num=iter_num)
-        cumulative_steps.extend(steps)
-        
-        # Run simulations and identify bistable rates
-        bis_rates = Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
-        bis_rates = np.array(bis_rates)/size
-        cumulative_brs.extend(bis_rates)
+        for df in dfs:
+            df_chunks = df_chunker(df, chunks=chunks)
+            bis_rate = Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in df_chunks)
+            bis_rate = np.sum(np.array(bis_rate))/size
+            cumulative_brs.append(bis_rate)
+
+        # Calculate midpoints
+        midpts = [np.mean([steps[i], steps[i+1]]) for i in range(len(steps)-1)]
+        cumulative_midpts.extend(midpts)
 
         # Record data
         tabulate_window(steps, bis_rates, param, save_dir)
@@ -276,6 +285,6 @@ for param in param_names:
         i_max = np.argmax(bis_rates)
         # Determine and update next iteration's start and stop
         start = steps[i_max]; stop = steps[i_max+1]
-    
-    # plot, save cumulated results in last iteration's directory
-    plot_rates(cumulative_steps, cumulative_brs, param, save_dir)
+
+    # plot, save cumulated results
+    plot_rates(cumulative_midpts, cumulative_brs, param, save_dir)
