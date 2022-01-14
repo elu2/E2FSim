@@ -201,7 +201,7 @@ def zoom_gen(p_params, n_params, unimp, size):
         generated[param].extend(np.random.uniform(0.1, 0.5, size=size) * params[param])
 
     for param in unimp:
-        generated[param].extend([params[param]]*size)
+        generated[param].extend(np.random.uniform(0.1, 10, size=size) * params[param])
 
     generated_df = pd.DataFrame(generated)
     
