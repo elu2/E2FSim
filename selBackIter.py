@@ -217,7 +217,7 @@ imp_init = ['k_b', 'k_E', 'k_CD', 'k_CDS', 'd_R', 'k_M', 'd_I', 'k_CE', 'k_P1', 
 
 # Loop through as many parameters as initialized
 for iteration in range(len(imp) - 1):
-    unimp_init = list(set(param_names) - set(imp)
+    unimp_init = list(set(param_names) - set(imp))
 
     rate_log = []
     for i in range(len(imp)):
