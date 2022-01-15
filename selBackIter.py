@@ -7,9 +7,12 @@ import pandas as pd
 import os
 
 # Path to write iteration results out to. Make directory if doesn't already exist.
-write_path = "./SelIterationResults/"
+write_path = "./selIterationResults/"
 if not os.path.exists(write_path):
     os.makedirs(write_path)
+
+# Read path for selective paths
+read_path = "./SweepSearching/iteration1/"
 
 # Number of parameter sets to generate and simulate over
 size = 500
@@ -66,7 +69,7 @@ serum_con = np.linspace(0.02, 20, 100)
 
 def mm(num_k, num_con, denom_K, denom_con):
     val = (num_k * num_con) / (denom_K + denom_con)
-    
+
     return val
 
 
@@ -104,24 +107,24 @@ def cond_analysis(E2F_on, E2F_off):
     delta_EE_SS = []
     for SS_off, SS_on in zip(E2F_off, E2F_on):
         delta_EE_SS.append(SS_on - SS_off)
-        
+
     # Bistability conditions
     bistable_bool = False
     if sum([i > EE_min_max * .1 for i in delta_EE_SS]) >= 2 and switch:
         bistable_bool = True
     elif sum([i > EE_min_max * .2 for i in delta_EE_SS]) >= 1 and switch:
         bistable_bool = True
-    
+
     # Resettability conditions
     reset_bool = False
     if delta_EE_SS[0] <= .05:
         reset_bool = True
-    
+
     # Assess if both resettable and bistable
     rebi_bool = 0
-    if reset_bool and bistable_bool: 
+    if reset_bool and bistable_bool:
         rebi_bool = 1
-    
+
     return rebi_bool, int(bistable_bool)
 
 
@@ -135,10 +138,10 @@ def systems(X, t, S):
     RP = X[5]
     RE = X[6]
     I = X[7]
-    
+
     kKpP1 = k_P1 / (K_P1 + I)
     kKpP2 = k_P2 / (K_P2 + I)
-        
+
     dMdt = mm(k_M, S, K_S, S) - (d_M * M)
     dCDdt = mm(k_CD, M, K_M, M) + mm(k_CDS, S, K_S, S) - d_CD * CD
     dCEdt = mm(k_CE, E, K_E, E) - (d_CE * CE)
@@ -147,10 +150,10 @@ def systems(X, t, S):
     dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
     dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
     dIdt = k_I - (d_I * I)
-        
+
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
-    
-    
+
+
 def csv_init(path, from_df_names):
     col_names = list(from_df_names.columns) + ["bistable"]
     pd.DataFrame(columns=col_names).to_csv(path, index=False)
@@ -161,7 +164,7 @@ def run_sim(param_subset):
     bis_counter = 0
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
-        
+
         set_dict = param_subset.iloc[i].to_dict()
         row_vals = list(set_dict.values())
 
@@ -181,19 +184,19 @@ def run_sim(param_subset):
             E2F_off.append(qsol[-1, 3])
 
         rebi_bool, bistable_bool = cond_analysis(E2F_on, E2F_off)
-        
-        if bistable_bool: 
+
+        if bistable_bool:
             bis_counter += 1
-    
+
     return bis_counter
-            
-            
+
+
 def sel_gen(imp, unimp, size):
     # Generate parameters with certain narrowed parameter space
     generated = {}
     for param in imp + unimp:
         generated[param] = []
-    
+
     for param in imp:
         start, stop = get_window(param)
         generated[param].extend(np.random.uniform(start, stop, size=size) * params[param])
@@ -202,25 +205,27 @@ def sel_gen(imp, unimp, size):
         generated[param].extend(np.random.uniform(0.1, 10, size=size) * params[param])
 
     generated_df = pd.DataFrame(generated)
-    
+
     return generated_df
 
 
-def get_window(param, path="~/SweepSearching/iteration1/"):
-    sweep_df = pd.read_csv(path + param + ".csv")
+def get_window(param):
+    sweep_df = pd.read_csv(read_path + param + ".csv")
     sweep_df = sweep_df.sort_values("rate")
-    mstart, mstop = (sweep_df.iloc[-1][1], sweep_df.iloc[-1][2])
+    # Round to third decimal
+    mstart, mstop = (np.round(sweep_df.iloc[-1][1], 3), np.round(sweep_df.iloc[-1][2], 3))
     return mstart, mstop
 
 
 imp_init = ['k_b', 'k_E', 'k_CD', 'k_CDS', 'd_R', 'k_M', 'd_I', 'k_CE', 'k_P1', 'k_P2', 'k_RE', 'K_P2', 'd_CE', 'K_CE', 'K_S', 'k_DP', 'K_P1', 'd_RP', 'd_M', 'k_I', 'd_CD', 'K_CD', 'K_RP', 'K_M', 'd_E', 'k_R', 'K_E', 'd_RE']
 
-# Loop through as many parameters as initialized
-for iteration in range(len(imp) - 1):
-    unimp_init = list(set(param_names) - set(imp))
+# Loop to run simulations with focus on each parameter in imp_init, then remove one and continue next iteration with 1 less
+for iteration in range(len(imp_init) - 1):
+    print(f"Running iteration: {iteration}")
+    unimp_init = list(set(param_names) - set(imp_init))
 
     rate_log = []
-    for i in range(len(imp)):
+    for i in range(len(imp_init)):
         # Re-initialize parameter classes
         imp = imp_init.copy()
         unimp = unimp_init.copy()
@@ -244,10 +249,10 @@ for iteration in range(len(imp) - 1):
 
     # Obtain parameters which lowered bistability rate least and most
     max_is = [i for i, value in enumerate(rate_log) if value == np.amax(rate_log)]
-    max_params = [imp[i] for i in max_is]
+    max_params = [imp_init[i] for i in max_is]
 
     min_is = [i for i, value in enumerate(rate_log) if value == np.amin(rate_log)]
-    min_params = [imp[i] for i in min_is]
+    min_params = [imp_init[i] for i in min_is]
 
     # Construct dataframe of results and export
     param_rates = {
