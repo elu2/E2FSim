@@ -65,28 +65,26 @@ def serum(time):
 # Returns distance between on and off IC curves and the [S]s of change
 # If bistable resettability is not achieved, return None.
 
-def delta_dist(EE_SS_on, EE_SS_off, serum_con):
-    bc_on = []
-    bc_off = []
-    
-    i = 0
-    for i in range(len(EE_SS_on) - 1):
-        if EE_SS_on[i + 1] - EE_SS_on[i] > 0.1:
-            bc_on.append(i)
+def delta_dist(EE_SS_on, EE_SS_off, serum_con, threshold=0.5):
+    threshold = 0.1
 
-        if EE_SS_off[i + 1] - EE_SS_off[i] > 0.1:
-            bc_off.append(i)
-            break
-    
-    if len(bc_on) == 0 or len(bc_off) == 0:
+    consec_dOn = np.array(EE_SS_on[1:]) - np.array(EE_SS_on[:-1])
+    on_thresh = np.where(consec_dOn > threshold)[0]
+
+    consec_dOff = np.array(EE_SS_off[1:]) - np.array(EE_SS_off[:-1])
+    off_thresh = np.where(consec_dOff > threshold)[0]
+
+    if len(on_thresh) == 0 or len(off_thresh) == 0:
         return None
-    
-    base_on = serum_con[bc_on[0]]
-    base_off = serum_con[bc_off[0]]
-            
-    diff = abs(base_on - base_off)
-    return [diff, base_on, base_off]
 
+    on_i = on_thresh[-1]
+    off_i = off_thresh[-1]
+
+    base_on = serum_con[on_i]
+    base_off = serum_con[off_i]
+    diff = abs(base_on - base_off)
+
+    return [diff, base_on, base_off]
 
 def systems(X, t, S):
     # ODEs as vector elements
@@ -114,8 +112,6 @@ def systems(X, t, S):
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
 
 
-# Chunk parameters for parallel processing
-
 def df_chunker(full_df, chunks):
     dfs = list()
     interval_size = full_df.shape[0]//chunks
@@ -133,6 +129,8 @@ def df_chunker(full_df, chunks):
 def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
+        inst_at = an_type
+        inst_at_val = globals()[an_type]
 
         set_dict = param_subset.iloc[i].to_dict()
         row_vals = list(set_dict.values())
@@ -146,6 +144,8 @@ def run_sim(param_subset):
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
+            
+        #pd.DataFrame({"SerumCon": serum_con, "EEOn": EE_SS_on, "EEOff": EE_SS_off, }).to_csv(f"./fullOutDP000/{inst_at}_{inst_at_val}.csv")
 
         try:
             dd = [round(x, 4) for x in delta_dist(EE_SS_on, EE_SS_off, serum_con)]
@@ -154,7 +154,7 @@ def run_sim(param_subset):
 
         row_vals.extend(dd)
         
-        with open(f"./depthRuns/DR{array_index}.csv", 'a+', newline='') as file:
+        with open(f"./DR{array_index}.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
@@ -173,14 +173,8 @@ X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 # Serum levels
 serum_con = np.linspace(0, 20, 2000)
 
-with open("runs.log", "a") as log:
-    log.write(f"{datetime.datetime.now()}, running depth analysis for index = {array_index}.\n")
-
-depth_params =  pd.read_csv(f"./depthParams/DP{array_index}.csv")
+depth_params =  pd.read_csv(f"./DP{array_index}.csv")
 
 dfs = df_chunker(depth_params, 28)
 
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
-
-with open("runs.log", "a") as log:
-    log.write(f"{datetime.datetime.now()}, running depth analysis for index = {array_index} completed.\n")
