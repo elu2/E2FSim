@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import os, sys
 
-array_index = sys.argv[1]
+array_index = "000"
 
 params = {
     "k_E": 0.4,
@@ -77,8 +77,8 @@ def delta_dist(EE_SS_on, EE_SS_off, serum_con, threshold=0.5):
     if len(on_thresh) == 0 or len(off_thresh) == 0:
         return None
 
-    on_i = on_thresh[-1]
-    off_i = off_thresh[-1]
+    on_i = on_thresh[0]
+    off_i = off_thresh[0]
 
     base_on = serum_con[on_i]
     base_off = serum_con[off_i]
@@ -171,7 +171,7 @@ globals().update(params)
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
-serum_con = np.linspace(0, 20, 2000)
+serum_con = np.linspace(0, 20, 500)
 
 depth_params =  pd.read_csv(f"./DP{array_index}.csv")
 
