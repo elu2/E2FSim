@@ -49,7 +49,7 @@ for i in range(bistable_sets.shape[0]):
         "an_type": []
     }
     
-    base = bistable_sets.iloc[i, :-2].to_dict()
+    base = bistable_sets.iloc[i,].to_dict()
 
     for param_key in list(params.keys())[:-1]:
         params["an_type"].extend([param_key] * reps)
