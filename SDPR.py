@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import os, sys
 
-array_index = "000"
+array_index = sys.argv[1]
 
 params = {
     "k_E": 0.4,
@@ -145,7 +145,7 @@ def run_sim(param_subset):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
             
-        #pd.DataFrame({"SerumCon": serum_con, "EEOn": EE_SS_on, "EEOff": EE_SS_off, }).to_csv(f"./fullOutDP000/{inst_at}_{inst_at_val}.csv")
+        pd.DataFrame({"SerumCon": serum_con, "EEOn": EE_SS_on, "EEOff": EE_SS_off, }).to_csv(f"./fullOutDP000/{inst_at}_{inst_at_val}.csv")
 
         try:
             dd = [round(x, 4) for x in delta_dist(EE_SS_on, EE_SS_off, serum_con)]
@@ -171,10 +171,10 @@ globals().update(params)
 X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
-serum_con = np.linspace(0, 20, 500)
+serum_con = np.logspace(np.log10(1e-5), np.log10(20), 500)
 
 depth_params =  pd.read_csv(f"./DP{array_index}.csv")
 
-dfs = df_chunker(depth_params, 28)
+dfs = df_chunker(depth_params, 94)
 
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
