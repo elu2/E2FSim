@@ -145,8 +145,6 @@ def run_sim(param_subset):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
             
-        pd.DataFrame({"SerumCon": serum_con, "EEOn": EE_SS_on, "EEOff": EE_SS_off, }).to_csv(f"./fullOutDP000/{inst_at}_{inst_at_val}.csv")
-
         try:
             dd = [round(x, 4) for x in delta_dist(EE_SS_on, EE_SS_off, serum_con)]
         except TypeError:
@@ -154,7 +152,7 @@ def run_sim(param_subset):
 
         row_vals.extend(dd)
         
-        with open(f"./DR{array_index}.csv", 'a+', newline='') as file:
+        with open(f"./depthRuns/DR{array_index}.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
 
@@ -173,7 +171,7 @@ X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 # Serum levels
 serum_con = np.logspace(np.log10(1e-5), np.log10(20), 500)
 
-depth_params =  pd.read_csv(f"./DP{array_index}.csv")
+depth_params =  pd.read_csv(f"./depthParams/DP{array_index}.csv")
 
 dfs = df_chunker(depth_params, 94)
 
