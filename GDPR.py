@@ -11,7 +11,7 @@ upper_oom = 10
 
 scalars = np.logspace(np.log10(lower_oom), np.log10(upper_oom), num=reps)
 
-bistable_sets = pd.read_csv("bistableResults2017.csv")
+bistable_sets = pd.read_csv("seed_sets.csv")
 
 if not os.path.exists("./depthParams/"):
     os.makedirs("./depthParams/")
