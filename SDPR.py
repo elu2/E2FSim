@@ -141,7 +141,7 @@ def find_halfmax(EE_SS, serum_con, threshold=0.1):
     lgl_EE_SS = np.convolve(lgl_EE_SS, np.ones(3, dtype=int), 'valid')
 
     thresh_i = subfinder(lgl_EE_SS, np.array([1, 2, 3]))
-    if len(threh_i) > 0:
+    if len(thresh_i) > 0:
         hm_con = serum_con[thresh_i[0]][0]
     else:
         hm_con = None
