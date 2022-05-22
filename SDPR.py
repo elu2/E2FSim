@@ -209,9 +209,14 @@ def run_sim(param_subset):
             csv_writer.writerow(row_vals)
         
         
+def powspace(start, stop, power, num):
+    start = np.power(start, 1/float(power))
+    stop = np.power(stop, 1/float(power))
+    return np.power( np.linspace(start, stop, num=num), power)
+
+
 # Time steps
-hours = 200
-t = np.linspace(0, hours, num=100)
+t = powspace(0, 1000, 4, 100)
 
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
@@ -226,6 +231,6 @@ serum_con = np.logspace(np.log10(0.01), np.log10(20), 500)
 
 depth_params =  pd.read_csv(f"./depthParams/DP{array_index}.csv")
 
-dfs = df_chunker(depth_params, 94)
+dfs = df_chunker(depth_params, 180)
 
 Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
