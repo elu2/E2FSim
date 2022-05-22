@@ -89,6 +89,8 @@ def systems(X, t, S):
 
 # Get index of beginning of a list where a sublist exists
 def subfinder(l, sl):
+    l = list(l)
+    sl = list(sl)
     results=[]
     sll=len(sl)
     for ind in (i for i,e in enumerate(l) if e==sl[0]):
