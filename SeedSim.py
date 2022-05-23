@@ -134,21 +134,64 @@ def calc_resettable(EE_SS_off, EE_SS_on):
     return False
 
 
-# Find serum concentration where a EE_SS first reaches 0.1
+# Find nearest value in a list to a scalar
+def nearest_val(in_arr, val):
+    arr_diff = abs(np.array(in_arr) - val)
+    return(np.squeeze(np.where(arr_diff == min(arr_diff))))
 
-def find_halfmax(EE_SS, serum_con, threshold=0.1):
-    EE_SS = np.array(EE_SS)
-    serum_con = np.array(serum_con)
-    lgl_EE_SS = (EE_SS > threshold) * 1
-    lgl_EE_SS = np.convolve(lgl_EE_SS, np.ones(3, dtype=int), 'valid')
 
-    thresh_i = subfinder(lgl_EE_SS, np.array([1, 2, 3]))
-    if len(thresh_i) > 0:
-        hm_con = serum_con[thresh_i[0]]
-    else:
-        hm_con = None
+# returns off half-point, on half-point, and difference in half-points in this order.
+def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-3):
+    EE_SS_on = np.array(EE_SS_on)
+    EE_SS_off = np.array(EE_SS_off)
+    donoff = EE_SS_on - EE_SS_off
+
+    # Logical vector for values where differences in trajectories are greater than tolerance
+    lgl_tol = list((abs(donoff) > tolerance) * 1)
     
-    return hm_con
+    # If neither curves separate from each other, return none for all
+    if sum(lgl_tol) == 0:
+        return [None, None, None]
+
+    # Get first and last indices of a bistable region
+    lgl_tol = [loc for loc, val in enumerate(lgl_tol) if val == 1]
+    min_i = min(lgl_tol); max_i = max(lgl_tol)        
+    
+    # Handles if both trajectories start off different
+    if min_i == 0:
+        min_i = 1
+
+    if max_i == len(serum_con) - 1:
+        # In this case, the on initial condition trajectory did not turn on, but off did turn on
+        if donoff[max_i] < 0:
+            off_bis = EE_SS_off[min_i - 1: max_i + 2]
+            off_hv = (off_bis[0] + off_bis[-1]) / 2
+            nrst_off = nearest_val(off_bis, off_hv)
+            off_bis_hm = serum_con[min_i - 1 + nrst_off]
+            
+            return [off_bis_hm, None, None]
+        
+        # Off initial condition trajectory did not turn on, but on did
+        elif donoff[max_i] > 0:
+            on_bis = EE_SS_on[min_i - 1: max_i + 1]
+            on_hv = (on_bis[0] + on_bis[-1]) / 2
+            nrst_on = nearest_val(on_bis, on_hv)
+            on_bis_hm = serum_con[min_i - 1 + nrst_on]
+            
+            return [None, on_bis_hm, None]
+
+    # Otherwise normally assess half-range point of bistable region
+    off_bis = EE_SS_off[min_i - 1: max_i + 2]
+    off_hv = (off_bis[0] + off_bis[-1]) / 2
+    nrst_off = nearest_val(off_bis, off_hv)
+    off_bis_hm = serum_con[min_i - 1 + nrst_off]
+    
+    on_bis = EE_SS_on[min_i - 1: max_i + 1]
+    on_hv = (on_bis[0] + on_bis[-1]) / 2
+    nrst_on = nearest_val(on_bis, on_hv)
+    on_bis_hm = serum_con[min_i - 1 + nrst_on]
+    
+    return [off_bis_hm, on_bis_hm, abs(on_bis_hm - off_bis_hm)]
 
 
 # Chunk parameters for parallel processing
@@ -191,12 +234,7 @@ def run_sim(param_subset):
         resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
         # Calculate the thresholds of activation/deactivation
-        hm_off = find_halfmax(EE_SS_off, serum_con)
-        hm_on = find_halfmax(EE_SS_on, serum_con)
-        if hm_off == None or hm_on == None:
-            dhm = None
-        else:
-            dhm = hm_off - hm_on
+        hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
         
         row_vals.extend([switch, bistable, resettable, hm_on, hm_off, dhm])
 
