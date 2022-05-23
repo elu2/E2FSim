@@ -94,8 +94,8 @@ def subfinder(l, sl):
     results=[]
     sll=len(sl)
     for ind in (i for i,e in enumerate(l) if e==sl[0]):
-        if l[ind:ind+sll]==sl:
-            results.append((ind,ind+sll-1))
+        if l[ind:ind+sll] == sl:
+            results.append(ind)
 
     return results
 
