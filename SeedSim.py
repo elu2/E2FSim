@@ -214,6 +214,7 @@ def df_chunker(full_df, chunks):
 def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
+        X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
         set_dict = param_subset.iloc[i].to_dict()
         row_vals = list(set_dict.values())
@@ -255,9 +256,6 @@ t = powspace(0, 1000, 4, 100)
 
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
-
-globals().update(params)
-X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
 
 # Serum levels
 serum_con = np.logspace(np.log10(0.01), np.log10(20), 500)
