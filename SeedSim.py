@@ -137,7 +137,8 @@ def calc_resettable(EE_SS_off, EE_SS_on):
 # Find nearest value in a list to a scalar
 def nearest_val(in_arr, val):
     arr_diff = abs(np.array(in_arr) - val)
-    return(np.squeeze(np.where(arr_diff == min(arr_diff))))
+    min_vals = np.where(arr_diff == min(arr_diff))
+    return(min_vals[0][0])
 
 
 # returns off half-point, on half-point, and difference in half-points in this order.
