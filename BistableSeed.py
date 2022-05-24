@@ -7,7 +7,7 @@ trunc_upper = 5000
 
 psr = pd.read_csv("./pre_seed_results.csv")
 
-psr = psr[psr["bistable"] == True].reset_index(drop=True)
+psr = psr[(psr["bistable"] == True) & (psr["switch"] == True) & (psr["resettable"] == True)].reset_index(drop=True)
 trunc = min(psr.shape[0], trunc_upper)
 
 psr = psr.drop(["switch", "bistable", "resettable", "on_thresh", "off_thresh", "d_thresh"], axis=1)
