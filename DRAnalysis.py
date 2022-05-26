@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+import os
 
 # Iterable for depth run files.
 dr_range = range(5001)
