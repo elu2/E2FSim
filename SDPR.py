@@ -179,7 +179,7 @@ def run_sim(param_subset):
         hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
         bistable = dhm > 0.2
         
-        sound = (hm_off >= 0.5) | (hm_off <= 10)
+        sound = (hm_off >= 0.5) & (hm_off <= 10)
         
         row_vals.extend([switch, bistable, resettable, sound, hm_on, hm_off, dhm, off_SS])
 
