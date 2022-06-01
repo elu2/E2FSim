@@ -1,22 +1,17 @@
 ## README
 
+PreSeedInit.py: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2017 paper. Produces pre_seed_sets.csv (Multipliers sampled from logspace)
+
+SeedSim.py: Runs simluation on each parameter set from pre_seed_sets.csv. Produces pre_seed_results.csv
+
+SeedSelect.py: Filters results from pre_seed_results.csv based on the 4 criteria. Produces seed_sets.csv.
+
+QDIR.py: Initializes DRXXX.csv files to store simulation data. Initializes DRXXX.csv.
+
+GDPR.py: Using the seeding parameter sets, perturbs each parameter from 0.1x to 10x as a new parameter set. 2800 total. Produces DPXXX.csv.
+
+SDPR.py: Chunks a parameter set (DPXXX.csv) to run simulations in parallel and output reuslts to an initialized DRXXX.csv file.
+
 Runs are tracked in the runs.log file.
 
-When running parallel across many models or within 1 model, run the respective dataframe-initializing script.
-
-### SimParamParallel vs SimModelParallel vs SimDepthParallel
-SimParamParallel breaks up a set of parameter sets and runs them in parallel. Ideal for a single model with a large parameter set (>20,000).
-Manually change the number of chunks to break the set of parameters up.
-
-SimModelParallel runs different model types in parallel to each other. Ideal for smaller parameter sets (<20,000) and many models.
-Manually change the range of models to run over. Total 768 unique models. Suggested to run in range increments of 48.
-
-SimDepthParallel runs different sets of parameters with 1 parameter varying in each parallel process. Reads in parameter csvs from the
-required depthLib directory. Outputs are written into a single file that must be subsetted.
-
-### Init Scripts
-MultiModelInit.py -- SimModelParallel.py
-
-SingleModelInit.py -- SimParamParallel.py
-
-QDepthInit.py -- SimDepthParallel.py
+Refer to E2FSimulation.pdf for which scripts to run.
