@@ -105,28 +105,6 @@ def calc_switch(EE_SS_off, serum_con, threshold=0.1):
     return False
 
 
-# If a certain number (n or n//2) of concentrations have a certain property, it is bistable
-def calc_bistable(EE_SS_off, EE_SS_on):
-    n = (len(EE_SS_off) // 25) * 2
-    
-    EE_SS_off = np.array(EE_SS_off); EE_SS_on = np.array(EE_SS_on)
-    delta_on_off = EE_SS_on - EE_SS_off
-    
-    thresh1_dmm = (max(EE_SS_off) - min(EE_SS_off)) * 0.1
-    thresh2_dmm = (max(EE_SS_off) - min(EE_SS_off)) * 0.2
-    
-    con1 = (delta_on_off >= thresh1_dmm) * 1
-    con1 = np.convolve(con1, np.ones(n, dtype=int), 'valid')
-    
-    con2 = (delta_on_off >= thresh2_dmm) * 1
-    con2 = np.convolve(con2, np.ones(n//2, dtype=int), 'valid')
-    
-    # If n consecutive reaching the criteria, bistability exists
-    if n in con1 or n//2 in con2:
-        return True
-    return False
-
-
 def calc_resettable(EE_SS_off, EE_SS_on):
     t0_delta = EE_SS_off[0] - EE_SS_on[0]
     if abs(t0_delta) < 0.001:
@@ -230,15 +208,20 @@ def run_sim(param_subset):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
         
+        # Steady state
+        off_SS = EE_SS_off[-1]
+        
         # Calculate properties of the system
         switch = calc_switch(EE_SS_off, serum_con)
-        bistable = calc_bistable(EE_SS_off, EE_SS_on)
         resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
         # Calculate the thresholds of activation/deactivation
         hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
+        bistable = dhm > 0.2
         
-        row_vals.extend([switch, bistable, resettable, hm_on, hm_off, dhm])
+        sound = (hm_off >= 0.5) | (hm_off <= 10)
+        
+        row_vals.extend([switch, bistable, resettable, sound, hm_on, hm_off, dhm, off_SS])
 
         with open(f"./pre_seed_results.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
@@ -258,7 +241,7 @@ t = powspace(0, 1000, 4, 100)
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
 
 # Serum levels
-serum_con = np.logspace(np.log10(0.01), np.log10(20), 500)
+serum_con = np.logspace(np.log10(0.01), np.log10(50), 500)
 
 pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")
 
