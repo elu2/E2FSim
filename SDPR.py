@@ -177,9 +177,16 @@ def run_sim(param_subset):
 
         # Calculate the thresholds of activation/deactivation
         hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
-        bistable = dhm > 0.2
-        
-        sound = (hm_off >= 0.5) & (hm_off <= 10)
+	
+        if dhm is not None:
+            bistable = dhm > 0.2
+        else:
+            bistable = None
+	
+        if hm_off is not None:
+            sound = (hm_off >= 0.5) & (hm_off <= 10)
+        else:
+            sound = None
         
         row_vals.extend([switch, bistable, resettable, sound, hm_on, hm_off, dhm, off_SS])
 
