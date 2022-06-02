@@ -1,5 +1,4 @@
-# Read from GDPR.log
-# Generate params like GDP.py except from different seeding.
+# Generate perturbed parameter sets from seed_sets.csv
 
 import pandas as pd
 import numpy as np
@@ -8,15 +7,16 @@ import os
 reps = 100
 lower_oom = 0.1
 upper_oom = 10
+n_pert = 5000
 
 scalars = np.logspace(np.log10(lower_oom), np.log10(upper_oom), num=reps)
 
-bistable_sets = pd.read_csv("seed_sets.csv")
+seed_sets = pd.read_csv("seed_sets.csv")
 
 if not os.path.exists("./depthParams/"):
     os.makedirs("./depthParams/")
 
-for i in range(bistable_sets.shape[0]):
+for i in range(n_pert):
     params = {
         "k_E": [],
         "k_M": [],
@@ -49,7 +49,8 @@ for i in range(bistable_sets.shape[0]):
         "an_type": []
     }
     
-    base = bistable_sets.iloc[i,:-1].to_dict()
+    # Index until -1 because last column is off_threshold
+    base = seed_sets.iloc[i,:28].to_dict()
 
     for param_key in list(params.keys())[:-1]:
         params["an_type"].extend([param_key] * reps)
