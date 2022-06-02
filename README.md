@@ -10,6 +10,8 @@ Simulation and analysis of the E2F network described and mathematically defined 
 
 Then, systematically perturbing each parameter of each seed set to simulate and analyze.
 
+![Perturbation of Base Parameters](assets/DR000_SG.png)
+
 ## Scripts
 
 1. **PreSeedInit.py**: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2008 paper. Produces `pre_seed_sets.csv` (Multipliers sampled from logspace)
