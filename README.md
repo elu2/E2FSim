@@ -2,7 +2,7 @@
 # E2F Simulation
 
 ## About
-Simulation and analysis of the E2F network described and mathematically defined in 2008 paper. Of primary focus are the initial conditions where E2F is turned on ($EE_{On}$), and turned off ($EE_{Off}$). Initial steps include generating random parameter sets that meet 4 criteria:
+Simulation and analysis of the E2F network described and mathematically defined in the below 2008 paper. Of primary focus are the initial conditions where E2F is turned on ($EE_{On}$), and turned off ($EE_{Off}$). Initial steps include generating random parameter sets that meet 4 criteria:
 1. (Weak) Switch-like behavior: $\Delta EE_{Off} = max(EE_{Off}) -min(EE_{Off}) > 0.1$
 2. Bistability: Bistable region is > 0.2
 3. Resettability: $\lim\limits_{[S] \to 0}\Delta EE =0$ for $\Delta EE=|EE_{Off} - EE_{On}|$
@@ -12,7 +12,7 @@ Then, systematically perturbing each parameter of each seed set to simulate and 
 
 ## Scripts
 
-1. **PreSeedInit.py**: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2017 paper. Produces `pre_seed_sets.csv` (Multipliers sampled from logspace)
+1. **PreSeedInit.py**: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2008 paper. Produces `pre_seed_sets.csv` (Multipliers sampled from logspace)
 
 2. **SeedSim.py**: Runs simluation on each parameter set from pre_seed_sets.csv. Produces `pre_seed_results.csv`
 
@@ -33,3 +33,6 @@ Then, systematically perturbing each parameter of each seed set to simulate and 
 * Runs are tracked in the runs.log file.
 
 * Refer to E2FSimulation.pdf for which scripts to run. Scripts marked with HPC are resource-intensive and not recommended to run locally.
+
+# References
+Yao, G., Lee, T., Mori, S. et al. A bistable Rb–E2F switch underlies the restriction point. Nat Cell Biol 10, 476–482 (2008). https://doi.org/10.1038/ncb1711
