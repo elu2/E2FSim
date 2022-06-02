@@ -187,12 +187,12 @@ def run_sim(param_subset):
         if dhm is not None:
             bistable = dhm > 0.2
         else:
-            bistable = None
+            bistable = False
 
         if hm_off is not None:
             sound = (hm_off >= 0.5) & (hm_off <= 10)
         else:
-            sound = None
+            sound = False
 
         row_vals.extend([switch, bistable, resettable,
                         sound, hm_on, hm_off, dhm, off_SS])
