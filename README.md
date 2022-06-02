@@ -1,17 +1,35 @@
-## README
 
-PreSeedInit.py: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2017 paper. Produces pre_seed_sets.csv (Multipliers sampled from logspace)
+# E2F Simulation
 
-SeedSim.py: Runs simluation on each parameter set from pre_seed_sets.csv. Produces pre_seed_results.csv
+## About
+Simulation and analysis of the E2F network described and mathematically defined in 2008 paper. Of primary focus are the initial conditions where E2F is turned on ($EE_{On}$), and turned off ($EE_{Off}$). Initial steps include generating random parameter sets that meet 4 criteria:
+1. (Weak) Switch-like behavior: $\Delta EE_{Off} = max(EE_{Off}) -min(EE_{Off}) > 0.1$
+2. Bistability: Bistable region is > 0.2
+3. Resettability: $\lim\limits_{[S] \to 0}\Delta EE =0$ for $\Delta EE=|EE_{Off} - EE_{On}|$
+4. Biologically sound: $0.5\leq [S]_{Off}\leq10$
 
-SeedSelect.py: Filters results from pre_seed_results.csv based on the 4 criteria. Produces seed_sets.csv.
+Then, systematically perturbing each parameter of each seed set to simulate and analyze.
 
-QDIR.py: Initializes DRXXX.csv files to store simulation data. Initializes DRXXX.csv.
+## Scripts
 
-GDPR.py: Using the seeding parameter sets, perturbs each parameter from 0.1x to 10x as a new parameter set. 2800 total. Produces DPXXX.csv.
+1. **PreSeedInit.py**: Generates randomized parameter sets within 0.1x and 10x the original parameter values listed in the 2017 paper. Produces `pre_seed_sets.csv` (Multipliers sampled from logspace)
 
-SDPR.py: Chunks a parameter set (DPXXX.csv) to run simulations in parallel and output reuslts to an initialized DRXXX.csv file.
+2. **SeedSim.py**: Runs simluation on each parameter set from pre_seed_sets.csv. Produces `pre_seed_results.csv`
 
-Runs are tracked in the runs.log file.
+3. **SeedSelect.py**: Filters results from pre_seed_results.csv based on the 4 criteria. Produces `seed_sets.csv`.
 
-Refer to E2FSimulation.pdf for which scripts to run.
+4. **QDIR.py**: Initializes `DRXXX.csv` files to store simulation data. Initializes `DRXXX.csv`.
+
+5. **GDPR.py**: Using the seeding parameter sets, perturbs each parameter from 0.1x to 10x as a new parameter set. 2800 total. Produces `DPXXX.csv`.
+
+6. **SDPR.py**: Chunks a parameter set (`DPXXX.csv`) to run simulations in parallel and output results to an initialized `DRXXX.csv` file.
+
+7. **DRAnalysis.py**: Analyze `DRXXX.csv` files for patterns associated with the perturbations. 
+	* Fold change until any of 4 criteria are broken, or final tested perturbation
+	* Perturbation where $EE_{Off}$ threshold reaches double or half the seed set's
+	* Annotate special behaviors
+
+# Others
+* Runs are tracked in the runs.log file.
+
+* Refer to E2FSimulation.pdf for which scripts to run. Scripts marked with HPC are resource-intensive and not recommended to run locally.
