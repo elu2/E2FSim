@@ -85,7 +85,7 @@ def df_chunker(full_df, chunks):
         dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
 
     if full_df.shape[0] % chunks != 0:
-        dfs.append(full_df.iloc[interval_size * chunks: , :])
+        dfs.append(full_df.iloc[interval_size * chunks:, :])
 
     return dfs
 
@@ -146,10 +146,14 @@ def systems(X, t, S):
     dMdt = mm(k_M, S, K_S, S) - (d_M * M)
     dCDdt = mm(k_CD, M, K_M, M) + mm(k_CDS, S, K_S, S) - d_CD * CD
     dCEdt = mm(k_CE, E, K_E, E) - (d_CE * CE)
-    dEdt = mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) + mm(k_E, M, K_M, M) * mm(1, E, K_E, E) + mm(k_b, M, K_M, M) - (d_E * E) - (k_RE * R * E)
-    dRdt = k_R + mm(k_DP, RP, K_RP, RP) - mm(kKpP1, CD * R, K_CD, R) - mm(kKpP2, CE * R, K_CE, R) - (d_R * R) - (k_RE * R * E)
-    dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
-    dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
+    dEdt = mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) + mm(k_E, M,
+                                                                            K_M, M) * mm(1, E, K_E, E) + mm(k_b, M, K_M, M) - (d_E * E) - (k_RE * R * E)
+    dRdt = k_R + mm(k_DP, RP, K_RP, RP) - mm(kKpP1, CD * R, K_CD, R) - \
+        mm(kKpP2, CE * R, K_CE, R) - (d_R * R) - (k_RE * R * E)
+    dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE,
+                                                                         K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
+    dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - \
+        mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
     dIdt = k_I - (d_I * I)
 
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
@@ -209,7 +213,8 @@ def window_gen(spec_param, size, start, stop, num):
     for param in param_names:
         if param != spec_param:
             base[param] = []
-            base[param].extend(np.array(loguniform.rvs(0.1, 10, size=size)) * params[param])
+            base[param].extend(np.array(loguniform.rvs(
+                0.1, 10, size=size)) * params[param])
     # Logspace of iteration range
     steps = np.logspace(np.log10(start), np.log10(stop), num=num)
     generated_dfs = []
@@ -218,7 +223,8 @@ def window_gen(spec_param, size, start, stop, num):
     for i in range(len(steps)-1):
         sub_gen = base.copy()
         sub_gen[spec_param] = []
-        sub_gen[spec_param].extend(np.random.uniform(steps[i], steps[i+1], size=size) * params[spec_param])
+        sub_gen[spec_param].extend(np.random.uniform(
+            steps[i], steps[i+1], size=size) * params[spec_param])
         sub_df = pd.DataFrame(sub_gen)
         generated_dfs.append(pd.DataFrame(sub_gen))
 
@@ -230,7 +236,8 @@ def plot_rates(midpts, bis_rates, param, save_dir):
     # Sort the values to display
     plot_dict = {"midpt": midpts, "bis_rates": bis_rates}
     plot_axes = pd.DataFrame(plot_dict).sort_values("midpt")
-    midpts = plot_axes["midpt"].tolist(); bis_rates = plot_axes["bis_rates"].tolist()
+    midpts = plot_axes["midpt"].tolist()
+    bis_rates = plot_axes["bis_rates"].tolist()
 
     plt.figure()
     plt.plot(midpts, bis_rates)
@@ -248,7 +255,7 @@ def tabulate_window(steps, bis_rates, param, save_dir):
         "start": steps[:-1],
         "stop": steps[1:],
         "rate": bis_rates
-        }
+    }
 
     window_df = pd.DataFrame(windows_dict)
     window_df.to_csv(f"{save_dir + param}.csv")
@@ -261,20 +268,23 @@ for param in param_names:
     # Store all layers' data to plot later
     cumulative_midpts = []
     cumulative_brs = []
-    
+
     for l in range(layers):
         save_dir = f"./SweepSearching/iteration{l}/"
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        
+
         layer_rates = []
         # Generate parameter sets and chunk for parallel processing
-        dfs, steps = window_gen(param, size=size, start=start, stop=stop, num=iter_num)
+        dfs, steps = window_gen(
+            param, size=size, start=start, stop=stop, num=iter_num)
         for df in dfs:
             df_chunks = df_chunker(df, chunks=chunks)
-            bis_rate = Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in df_chunks)
+            bis_rate = Parallel(n_jobs=-1)(delayed(run_sim)(sub_df)
+                                           for sub_df in df_chunks)
             bis_rate = np.sum(np.array(bis_rate))/size
-            cumulative_brs.append(bis_rate); layer_rates.append(bis_rate)
+            cumulative_brs.append(bis_rate)
+            layer_rates.append(bis_rate)
 
         # Calculate midpoints
         midpts = [np.mean([steps[i], steps[i+1]]) for i in range(len(steps)-1)]
@@ -283,7 +293,8 @@ for param in param_names:
         # Index of max rate
         i_max = np.argmax(layer_rates)
         # Determine and update next iteration's start and stop
-        start = steps[i_max]; stop = steps[i_max+1]
+        start = steps[i_max]
+        stop = steps[i_max+1]
 
         # Record data
         tabulate_window(steps, layer_rates, param, save_dir)

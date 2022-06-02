@@ -6,7 +6,8 @@ from scipy.integrate import odeint
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
-import os, sys
+import os
+import sys
 
 array_index = sys.argv[1]
 
@@ -58,7 +59,8 @@ def serum(time):
     low = .5
     if time < R:
         return hi
-    else: return low
+    else:
+        return low
 
 
 def systems(X, t, S):
@@ -78,10 +80,14 @@ def systems(X, t, S):
     dMdt = mm(k_M, S, K_S, S) - (d_M * M)
     dCDdt = mm(k_CD, M, K_M, M) + mm(k_CDS, S, K_S, S) - d_CD * CD
     dCEdt = mm(k_CE, E, K_E, E) - (d_CE * CE)
-    dEdt = mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) + mm(k_E, M, K_M, M) * mm(1, E, K_E, E) + mm(k_b, M, K_M, M) - (d_E * E) - (k_RE * R * E)
-    dRdt = k_R + mm(k_DP, RP, K_RP, RP) - mm(kKpP1, CD * R, K_CD, R) - mm(kKpP2, CE * R, K_CE, R) - (d_R * R) - (k_RE * R * E)
-    dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
-    dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
+    dEdt = mm(kKpP1, CD * RE, K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) + mm(k_E, M,
+                                                                            K_M, M) * mm(1, E, K_E, E) + mm(k_b, M, K_M, M) - (d_E * E) - (k_RE * R * E)
+    dRdt = k_R + mm(k_DP, RP, K_RP, RP) - mm(kKpP1, CD * R, K_CD, R) - \
+        mm(kKpP2, CE * R, K_CE, R) - (d_R * R) - (k_RE * R * E)
+    dRPdt = mm(kKpP1, CD * R, K_CD, R) + mm(kKpP2, CE * R, K_CE, R) + mm(kKpP1, CD * RE,
+                                                                         K_CD, RE) + mm(kKpP2, CE * RE, K_CE, RE) - mm(k_DP, RP, K_RP, RP) - (d_RP * RP)
+    dREdt = (k_RE * R * E) - mm(kKpP1, CD * RE, K_CD, RE) - \
+        mm(kKpP2, CE * RE, K_CE, RE) - (d_RE * RE)
     dIdt = k_I - (d_I * I)
 
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
@@ -91,9 +97,9 @@ def systems(X, t, S):
 def subfinder(l, sl):
     l = list(l)
     sl = list(sl)
-    results=[]
-    sll=len(sl)
-    for ind in (i for i,e in enumerate(l) if e==sl[0]):
+    results = []
+    sll = len(sl)
+    for ind in (i for i, e in enumerate(l) if e == sl[0]):
         if l[ind:ind+sll] == sl:
             results.append(ind)
 
@@ -127,7 +133,7 @@ def find_halfmax(EE_SS, serum_con, threshold=0.1):
         hm_con = serum_con[thresh_i[0]]
     else:
         hm_con = None
-    
+
     return hm_con
 
 
@@ -142,7 +148,7 @@ def df_chunker(full_df, chunks):
         dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
 
     if depth_params.shape[0] % chunks != 0:
-        dfs.append(full_df.iloc[interval_size * chunks: , :])
+        dfs.append(full_df.iloc[interval_size * chunks:, :])
 
     return dfs
 
@@ -151,7 +157,7 @@ def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
         X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
-        
+
         inst_at = an_type
         inst_at_val = globals()[an_type]
 
@@ -168,32 +174,33 @@ def run_sim(param_subset):
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
-            
+
         off_SS = EE_SS_off[-1]
-        
+
         # Calculate properties of the system
         switch = calc_switch(EE_SS_off, serum_con)
         resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
         # Calculate the thresholds of activation/deactivation
         hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
-	
+
         if dhm is not None:
             bistable = dhm > 0.2
         else:
             bistable = None
-	
+
         if hm_off is not None:
             sound = (hm_off >= 0.5) & (hm_off <= 10)
         else:
             sound = None
-        
-        row_vals.extend([switch, bistable, resettable, sound, hm_on, hm_off, dhm, off_SS])
+
+        row_vals.extend([switch, bistable, resettable,
+                        sound, hm_on, hm_off, dhm, off_SS])
 
         with open(f"./depthRuns/DR{array_index}.csv", 'a+', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(row_vals)
-        
+
 
 # Find nearest value in a list to a scalar
 def nearest_val(in_arr, val):
@@ -210,15 +217,16 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-3):
 
     # Logical vector for values where differences in trajectories are greater than tolerance
     lgl_tol = list((abs(donoff) > tolerance) * 1)
-    
+
     # If neither curves separate from each other, return none for all
     if sum(lgl_tol) == 0:
         return [None, None, None]
 
     # Get first and last indices of a bistable region
     lgl_tol = [loc for loc, val in enumerate(lgl_tol) if val == 1]
-    min_i = min(lgl_tol); max_i = max(lgl_tol)        
-    
+    min_i = min(lgl_tol)
+    max_i = max(lgl_tol)
+
     # Handles if both trajectories start off different
     if min_i == 0:
         min_i = 1
@@ -230,16 +238,16 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-3):
             off_hv = (off_bis[0] + off_bis[-1]) / 2
             nrst_off = nearest_val(off_bis, off_hv)
             off_bis_hm = serum_con[min_i - 1 + nrst_off]
-            
+
             return [off_bis_hm, None, None]
-        
+
         # Off initial condition trajectory did not turn on, but on did
         elif donoff[max_i] > 0:
             on_bis = EE_SS_on[min_i - 1: max_i + 1]
             on_hv = (on_bis[0] + on_bis[-1]) / 2
             nrst_on = nearest_val(on_bis, on_hv)
             on_bis_hm = serum_con[min_i - 1 + nrst_on]
-            
+
             return [None, on_bis_hm, None]
 
     # Otherwise normally assess half-range point of bistable region
@@ -247,19 +255,19 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-3):
     off_hv = (off_bis[0] + off_bis[-1]) / 2
     nrst_off = nearest_val(off_bis, off_hv)
     off_bis_hm = serum_con[min_i - 1 + nrst_off]
-    
+
     on_bis = EE_SS_on[min_i - 1: max_i + 1]
     on_hv = (on_bis[0] + on_bis[-1]) / 2
     nrst_on = nearest_val(on_bis, on_hv)
     on_bis_hm = serum_con[min_i - 1 + nrst_on]
-    
+
     return [off_bis_hm, on_bis_hm, abs(on_bis_hm - off_bis_hm)]
 
-        
+
 def powspace(start, stop, power, num):
     start = np.power(start, 1/float(power))
     stop = np.power(stop, 1/float(power))
-    return np.power( np.linspace(start, stop, num=num), power)
+    return np.power(np.linspace(start, stop, num=num), power)
 
 
 # Time steps
@@ -267,7 +275,7 @@ t = powspace(0, 1000, 4, 100)
 
 # initial conditions
 X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
- 
+
 # Load base parameters for E2F on initial conditions
 seed_params = pd.read_csv("seed_sets.csv").iloc[int(array_index)]
 globals().update(seed_params)
@@ -275,7 +283,7 @@ globals().update(seed_params)
 # Serum levels
 serum_con = np.logspace(np.log10(0.01), np.log10(50), 500)
 
-depth_params =  pd.read_csv(f"./depthParams/DP{array_index}.csv")
+depth_params = pd.read_csv(f"./depthParams/DP{array_index}.csv")
 
 dfs = df_chunker(depth_params, 180)
 

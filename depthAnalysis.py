@@ -6,7 +6,8 @@ import csv
 
 # Note: columns are in a fixed order according to param_names
 
-param_names = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'k_CE', 'k_I', 'k_P1', 'k_P2', 'k_DP', 'd_M', 'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'K_S', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P1', 'K_P2']
+param_names = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'k_CE', 'k_I', 'k_P1', 'k_P2', 'k_DP', 'd_M',
+               'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'K_S', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P1', 'K_P2']
 
 # Construct list of all names and behaviors.
 all_names = []
@@ -96,7 +97,6 @@ def assigner(data, param_names):
         data_dict[param] = [inc_dec(rel['dOnOff'], rel['on_th'], param)[0]]
         data_dict[param].append(inc_dec(rel['on_th'], 1, param)[0])
 
-
     # Shallower, deeper, and dne behaviors
     deeper = []
     shallower = []
@@ -128,7 +128,6 @@ def assigner(data, param_names):
             narrower.append(key + "_dec")
         if data_dict[key][0][1] == "-" and data_dict[key][1][1] == "-":
             narrower.append(key + "_inc")
-
 
     return (deeper, shallower, narrower, dne)
 

@@ -48,9 +48,9 @@ for i in range(n_pert):
         "K_P2": [],
         "an_type": []
     }
-    
+
     # Index until -1 because last column is off_threshold
-    base = seed_sets.iloc[i,:28].to_dict()
+    base = seed_sets.iloc[i, :28].to_dict()
 
     for param_key in list(params.keys())[:-1]:
         params["an_type"].extend([param_key] * reps)

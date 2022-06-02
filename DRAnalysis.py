@@ -26,7 +26,7 @@ def DR_FoldChange_MaxDer(dr_index):
     # Simplify by making new column for all 3 criteria being met
     dr_df["valid"] = dr_df["switch"] * dr_df["resettable"] * dr_df["switch"]
 
-    # Caution of hard-coded indices 
+    # Caution of hard-coded indices
     param_names = list(dr_df.columns[:-8])
 
     # Get seed set's off threshold
@@ -79,16 +79,17 @@ def DR_FoldChange_MaxDer(dr_index):
 
         max_ddx_dict[f"{param_names[i]}_dec"] = [lower_ddx_max]
         max_ddx_dict[f"{param_names[i]}_inc"] = [upper_ddx_max]
-    
+
     # Convert to a row of a dataframe for ease
     fc_row = pd.DataFrame(fc_dict)
     mddx_row = pd.DataFrame(max_ddx_dict)
-    
+
     return fc_row, mddx_row
 
 
 for i in dr_range:
     fc_row, mddx_row = DR_FoldChange_MaxDer(i)
-    fc_row.to_csv("DR_FC.csv", mode='a', header=not os.path.exists("DR_FC.csv"), index=False)
-    mddx_row.to_csv("DR_MD.csv", mode='a', header=not os.path.exists("DR_MD.csv"), index=False)
-    
+    fc_row.to_csv("DR_FC.csv", mode='a',
+                  header=not os.path.exists("DR_FC.csv"), index=False)
+    mddx_row.to_csv("DR_MD.csv", mode='a',
+                    header=not os.path.exists("DR_MD.csv"), index=False)

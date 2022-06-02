@@ -17,7 +17,8 @@ n_params = 100000
 lower_oom = 0.1
 upper_oom = 10
 
-param_names = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'k_CE', 'k_I', 'k_P1', 'k_P2', 'k_DP', 'd_M', 'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'K_S', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P1', 'K_P2']
+param_names = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'k_CE', 'k_I', 'k_P1', 'k_P2', 'k_DP', 'd_M',
+               'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'K_S', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P1', 'K_P2']
 
 base = {
     "k_E": 0.4,
@@ -56,6 +57,7 @@ for name in param_names:
     params[name] = []
 
 for name in param_names:
-    params[name].extend(list(np.around(lognuniform(np.log10(base[name] * lower_oom), np.log10(base[name] * upper_oom), size=n_params, base=10), 4)))
-    
+    params[name].extend(list(np.around(lognuniform(np.log10(
+        base[name] * lower_oom), np.log10(base[name] * upper_oom), size=n_params, base=10), 4)))
+
 pd.DataFrame(params).to_csv("pre_seed_sets.csv", index=False)
