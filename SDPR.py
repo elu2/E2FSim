@@ -210,7 +210,7 @@ def nearest_val(in_arr, val):
 
 
 # returns off half-point, on half-point, and difference in half-points in this order.
-def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-3):
+def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-5):
     EE_SS_on = np.array(EE_SS_on)
     EE_SS_off = np.array(EE_SS_off)
     donoff = EE_SS_on - EE_SS_off
