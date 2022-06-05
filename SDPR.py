@@ -156,7 +156,7 @@ def df_chunker(full_df, chunks):
 def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
-        X0_on = list(odeint(systems, X0_off, t, args=(20,))[-1])
+        X0_on = list(odeint(systems, X0_off, t, args=(50,))[-1])
 
         inst_at = an_type
         inst_at_val = globals()[an_type]
