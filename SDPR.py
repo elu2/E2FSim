@@ -153,7 +153,10 @@ def df_chunker(full_df, chunks):
     return dfs
 
 
-def run_sim(param_subset):
+# param_subset: a dictionary of parameters and analysis focus
+# decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
+# n_retain: retain full outputs of simulations for n DepthParams
+def run_sim(param_subset, decimals=3, n_retain=0):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
         X0_off = list(odeint(systems, X0_init, t, args=(0,))[-1])
@@ -166,8 +169,13 @@ def run_sim(param_subset):
         row_vals = list(set_dict.values())
 
         EE_SS_on = []
-        EE_SS_off = []
+        EE_SS_off = []        
 
+        # Record full output of values
+        if array_index < n_retain:
+            if not os.path.exists(f"./retainedData/DR{array_index}/"):
+                os.mkdirs(f"./retainedData/DR{array_index}/")
+        
         # Run simulation
         for S in serum_con:
             psol = odeint(systems, X0_on, t, args=(S,))
@@ -175,7 +183,14 @@ def run_sim(param_subset):
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
-
+            
+            if array_index < n_retain:
+                retain_df = pd.DataFrame({"on": psol[:, 3], "off", qsol[:, 3]})
+                retain_df.to_csv(f"./retainedData/DR{array_index}/{inst_at}-{inst_at_val}.csv", index=False)
+        
+        EE_SS_on = np.around(EE_SS_on, decimals)
+        EE_SS_off = np.around(EE_SS_off, decimals)
+        
         off_SS = EE_SS_off[-1]
 
         # Calculate properties of the system
@@ -211,9 +226,9 @@ def nearest_val(in_arr, val):
 
 
 # returns off half-point, on half-point, and difference in half-points in this order.
-def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0, decimals=3):
-    EE_SS_on = np.around(np.array(EE_SS_on), decimals)
-    EE_SS_off = np.around(np.array(EE_SS_off), decimals)
+def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0):
+    EE_SS_on = np.array(EE_SS_on)
+    EE_SS_off = np.array(EE_SS_off)
     donoff = EE_SS_on - EE_SS_off
 
     # Logical vector for values where differences in trajectories are greater than tolerance
