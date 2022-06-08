@@ -126,9 +126,9 @@ def nearest_val(in_arr, val):
 
 
 # returns off half-point, on half-point, and difference in half-points in this order.
-def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0, decimals=3):
-    EE_SS_on = np.around(np.array(EE_SS_on), decimals)
-    EE_SS_off = np.around(np.array(EE_SS_off), decimals)
+def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0):
+    EE_SS_on = np.array(EE_SS_on)
+    EE_SS_off = np.array(EE_SS_off)
     donoff = EE_SS_on - EE_SS_off
 
     # Logical vector for values where differences in trajectories are greater than tolerance
@@ -196,7 +196,10 @@ def df_chunker(full_df, chunks):
     return dfs
 
 
-def run_sim(param_subset):
+# param_subset: a dictionary of parameters and analysis focus
+# decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
+
+def run_sim(param_subset, decimals=3):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
         X0_off = list(odeint(systems, X0_init, t, args=(0,))[-1])
@@ -216,6 +219,9 @@ def run_sim(param_subset):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
 
+        EE_SS_on = np.around(EE_SS_on, decimals))
+        EE_SS_off = np.around(EE_SS_off, decimals)
+            
         # Steady state
         off_SS = EE_SS_off[-1]
 
