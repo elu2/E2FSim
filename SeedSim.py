@@ -219,9 +219,9 @@ def run_sim(param_subset, decimals=3):
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
 
-        EE_SS_on = np.around(EE_SS_on, decimals))
+        EE_SS_on = np.around(EE_SS_on, decimals)
         EE_SS_off = np.around(EE_SS_off, decimals)
-            
+
         # Steady state
         off_SS = EE_SS_off[-1]
 

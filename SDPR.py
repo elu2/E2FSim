@@ -145,7 +145,8 @@ def df_chunker(full_df, chunks):
     dfs.append(full_df.iloc[0:interval_size, :])
 
     for i in range(chunks - 1):
-        dfs.append(full_df.iloc[(interval_size * (i + 1)):(interval_size * (i + 2)), :])
+        dfs.append(full_df.iloc[(interval_size * (i + 1))
+                   :(interval_size * (i + 2)), :])
 
     if depth_params.shape[0] % chunks != 0:
         dfs.append(full_df.iloc[interval_size * chunks:, :])
@@ -169,13 +170,13 @@ def run_sim(param_subset, decimals=3, n_retain=0):
         row_vals = list(set_dict.values())
 
         EE_SS_on = []
-        EE_SS_off = []        
+        EE_SS_off = []
 
         # Record full output of values
         if array_index < n_retain:
             if not os.path.exists(f"./retainedData/DR{array_index}/"):
                 os.mkdirs(f"./retainedData/DR{array_index}/")
-        
+
         # Run simulation
         for S in serum_con:
             psol = odeint(systems, X0_on, t, args=(S,))
@@ -183,14 +184,15 @@ def run_sim(param_subset, decimals=3, n_retain=0):
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
-            
+
             if array_index < n_retain:
                 retain_df = pd.DataFrame({"on": psol[:, 3], "off", qsol[:, 3]})
-                retain_df.to_csv(f"./retainedData/DR{array_index}/{inst_at}-{inst_at_val}.csv", index=False)
-        
+                retain_df.to_csv(
+                    f"./retainedData/DR{array_index}/{inst_at}-{inst_at_val}.csv", index=False)
+
         EE_SS_on = np.around(EE_SS_on, decimals)
         EE_SS_off = np.around(EE_SS_off, decimals)
-        
+
         off_SS = EE_SS_off[-1]
 
         # Calculate properties of the system
