@@ -156,6 +156,7 @@ def df_chunker(full_df, chunks):
 def run_sim(param_subset):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
+        X0_off = list(odeint(systems, X0_init, t, args=(0,))[-1])
         X0_on = list(odeint(systems, X0_off, t, args=(50,))[-1])
 
         inst_at = an_type
@@ -206,7 +207,7 @@ def run_sim(param_subset):
 def nearest_val(in_arr, val):
     arr_diff = abs(np.array(in_arr) - val)
     min_vals = np.where(arr_diff == min(arr_diff))
-    return(min_vals[0][0])
+    return(min_vals[0][-1])
 
 
 # returns off half-point, on half-point, and difference in half-points in this order.
@@ -274,7 +275,7 @@ def powspace(start, stop, power, num):
 t = powspace(0, 1000, 4, 100)
 
 # initial conditions
-X0_off = [0, 0, 0, 0, 0, 0, .55, .5]
+X0_init = [0, 0, 0, 0, 0, 0, .55, .5]
 
 # Load base parameters for E2F on initial conditions
 seed_params = pd.read_csv("seed_sets.csv").iloc[int(array_index)]
