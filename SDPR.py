@@ -175,7 +175,7 @@ def run_sim(param_subset, decimals=3, n_retain=0):
         # Record full output of values
         if int(array_index) < n_retain:
             if not os.path.exists(f"./retainedData/DR{array_index}/"):
-                os.mkdirs(f"./retainedData/DR{array_index}/")
+                os.makedirs(f"./retainedData/DR{array_index}/")
 
         # Run simulation
         for S in serum_con:
