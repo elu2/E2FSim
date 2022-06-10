@@ -157,7 +157,7 @@ def df_chunker(full_df, chunks):
 # param_subset: a dictionary of parameters and analysis focus
 # decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
 # n_retain: retain full outputs of simulations for n DepthParams
-def run_sim(param_subset, decimals=3, n_retain=0):
+def run_sim(param_subset, decimals=3):
     for i in range(param_subset.shape[0]):
         globals().update(param_subset.iloc[i].to_dict())
         X0_off = list(odeint(systems, X0_init, t, args=(0,))[-1])
@@ -172,11 +172,6 @@ def run_sim(param_subset, decimals=3, n_retain=0):
         EE_SS_on = []
         EE_SS_off = []
 
-        # Record full output of values
-        if int(array_index) < n_retain:
-            if not os.path.exists(f"./retainedData/DR{array_index}/"):
-                os.makedirs(f"./retainedData/DR{array_index}/")
-
         # Run simulation
         for S in serum_con:
             psol = odeint(systems, X0_on, t, args=(S,))
@@ -184,11 +179,6 @@ def run_sim(param_subset, decimals=3, n_retain=0):
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
-
-            if int(array_index) < n_retain:
-                retain_df = pd.DataFrame({"on": psol[:, 3], "off": qsol[:, 3]})
-                retain_df.to_csv(
-                    f"./retainedData/DR{array_index}/{inst_at}-{inst_at_val}.csv", index=False)
 
         EE_SS_on = np.around(EE_SS_on, decimals)
         EE_SS_off = np.around(EE_SS_off, decimals)
