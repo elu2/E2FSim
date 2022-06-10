@@ -257,11 +257,9 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-5):
     max_i = max(lgl_tol)
 
     # Handles if both trajectories start off different
-    print(min_i)
     if min_i == 0:
         min_i = 1
 
-    print(max_i)
     if max_i == len(serum_con) - 1:
         # In this case, the on initial condition trajectory did not turn on, but off did turn on
         if donoff[max_i] < 0:
