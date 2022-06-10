@@ -125,14 +125,35 @@ def nearest_val(in_arr, val):
     return(min_vals[0][-1])
 
 
+# Smooth anomalies out
+def lgl_smoothing(lgl_tol, window_size=5):
+    windows = np.lib.stride_tricks.sliding_window_view(lgl_tol, window_size)
+    windows = np.matrix(windows)
+    roll_mean = np.asarray(np.matrix.mean(windows, 1)).flatten()
+
+    # Anomaly if there is an isolated 1 value in the lgl list
+    anom_sublist = np.repeat(1/window_size, window_size)
+
+    anoms = []
+    for i in range(len(roll_mean) - window_size):
+        if all(anom_sublist == roll_mean[i:i+window_size]):
+            anoms.append(i + window_size - 1)
+
+    for anom in anoms:
+        lgl_tol[anom] = 0
+
+    return lgl_tol
+
+
 # returns off half-point, on half-point, and difference in half-points in this order.
-def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0):
+def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-5):
     EE_SS_on = np.array(EE_SS_on)
     EE_SS_off = np.array(EE_SS_off)
     donoff = EE_SS_on - EE_SS_off
 
     # Logical vector for values where differences in trajectories are greater than tolerance
     lgl_tol = list((abs(donoff) > tolerance) * 1)
+    lgl_tol = lgl_smoothing(lgl_tol)
 
     # If neither curves separate from each other, return none for all
     if sum(lgl_tol) == 0:
@@ -144,9 +165,11 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0):
     max_i = max(lgl_tol)
 
     # Handles if both trajectories start off different
+    print(min_i)
     if min_i == 0:
         min_i = 1
 
+    print(max_i)
     if max_i == len(serum_con) - 1:
         # In this case, the on initial condition trajectory did not turn on, but off did turn on
         if donoff[max_i] < 0:
