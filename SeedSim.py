@@ -165,11 +165,9 @@ def act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=1e-5):
     max_i = max(lgl_tol)
 
     # Handles if both trajectories start off different
-    print(min_i)
     if min_i == 0:
         min_i = 1
 
-    print(max_i)
     if max_i == len(serum_con) - 1:
         # In this case, the on initial condition trajectory did not turn on, but off did turn on
         if donoff[max_i] < 0:
@@ -222,11 +220,28 @@ def df_chunker(full_df, chunks):
 # param_subset: a dictionary of parameters and analysis focus
 # decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
 
-def run_sim(param_subset, decimals=3):
+def run_sim(param_subset, units="concentration", max_serum=50, decimals=3, adj_avo=6.022e5):
+    serum_con = np.logspace(np.log10(0.01), np.log10(max_serum), 500)
     for i in range(param_subset.shape[0]):
-        globals().update(param_subset.iloc[i].to_dict())
-        X0_off = list(odeint(systems, X0_init, t, args=(0,))[-1])
-        X0_on = list(odeint(systems, X0_off, t, args=(50,))[-1])
+        params = param_subset.iloc[i]
+        globals().update(params)
+        inst_at = params["an_type"]
+        inst_at_val = params[inst_at]
+
+        if units == "counts":
+            # Convert to counts for parameters with uM in units (described in paper)
+            param_type = np.array([x[0].lower() for x in params.index[:-1]])
+            k_RE_i = np.where(params.index[:-1] == "k_RE")[0][0]
+            # k_RE is an exception: divide by adj_avo instead
+            to_convert = np.where(param_type == "k")[0]; to_convert = np.delete(to_convert, k_RE_i)
+            params[to_convert] = params[to_convert] * adj_avo; params[k_RE_i] = params[k_RE_i] / adj_avo
+            # Serum is converted as well
+            max_serum = max_serum * adj_avo
+            # Re-update globals
+            globals().update(params)
+
+        X0_off = np.array(list(odeint(systems, X0_init, t, args=(0,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
+        X0_on = np.array(list(odeint(systems, X0_off, t, args=(max_serum,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
 
         set_dict = param_subset.iloc[i].to_dict()
         row_vals = list(set_dict.values())
@@ -236,11 +251,17 @@ def run_sim(param_subset, decimals=3):
 
         # Run simulation
         for S in serum_con:
-            psol = odeint(systems, X0_on, t, args=(S,))
-            qsol = odeint(systems, X0_off, t, args=(S,))
+            psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
+            qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
 
             EE_SS_on.append(psol[-1, 3])
             EE_SS_off.append(qsol[-1, 3])
+
+        # Revert species values and serum to pre-adjusted values
+        if units == "counts":
+            EE_SS_on = np.array(EE_SS_on) / adj_avo
+            EE_SS_off = np.array(EE_SS_off) / adj_avo
+            serum_con = serum_con / adj_avo
 
         EE_SS_on = np.around(EE_SS_on, decimals)
         EE_SS_off = np.around(EE_SS_off, decimals)
@@ -278,14 +299,28 @@ def powspace(start, stop, power, num):
     return np.power(np.linspace(start, stop, num=num), power)
 
 
+units = "counts"
+
 # Time steps
 t = powspace(0, 1000, 4, 100)
 
 # initial conditions
 X0_init = [0, 0, 0, 0, 0, 0, .55, .5]
 
+# Maximum serum concentration
+max_serum = 50
+
+# Avogadro's number adjusted for volume and unit of measurement
+cell_vol = 1e-12
+unit = 1e-6
+adj_avo = 6.022e23 * cell_vol * unit
+
 # Serum levels
 serum_con = np.logspace(np.log10(0.01), np.log10(50), 500)
+
+if units == "counts":
+    X0_init = np.array(X0_init) * adj_avo
+    serum_con = serum_con * adj_avo
 
 pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")
 
