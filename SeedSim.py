@@ -220,7 +220,7 @@ def df_chunker(full_df, chunks):
 # param_subset: a dictionary of parameters and analysis focus
 # decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
 
-def run_sim(param_subset, units="concentration", max_serum=50, decimals=3, adj_avo=6.022e5):
+def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.022e5):
     serum_con = np.logspace(np.log10(0.01), np.log10(max_serum), 500)
     for i in range(param_subset.shape[0]):
         params = param_subset.iloc[i]
@@ -236,6 +236,7 @@ def run_sim(param_subset, units="concentration", max_serum=50, decimals=3, adj_a
             to_convert = np.where(param_type == "k")[0]; to_convert = np.delete(to_convert, k_RE_i)
             params[to_convert] = params[to_convert] * adj_avo; params[k_RE_i] = params[k_RE_i] / adj_avo
             # Serum is converted as well
+            serum_con = serum_con * adj_avo
             max_serum = max_serum * adj_avo
             # Re-update globals
             globals().update(params)
@@ -274,7 +275,7 @@ def run_sim(param_subset, units="concentration", max_serum=50, decimals=3, adj_a
         resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
         # Calculate the thresholds of activation/deactivation
-        hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con)
+        hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0.05*max(EE_SS_off)+1e-3)
         if dhm is not None:
             bistable = dhm > 0.2
         else:
@@ -324,6 +325,4 @@ if units == "counts":
 
 pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")
 
-dfs = df_chunker(pre_seed_sets, 180)
-
-Parallel(n_jobs=-1)(delayed(run_sim)(sub_df) for sub_df in dfs)
+Parallel(n_jobs=-1)(delayed(run_sim)(pre_seed_sets.iloc[i], units="counts") for i in range(pre_seed_sets.shape[0]))
