@@ -224,13 +224,11 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
     serum_con = np.logspace(np.log10(0.01), np.log10(max_serum), 500)
     params = param_subset.copy()
     globals().update(params)
-    inst_at = params["an_type"]
-    inst_at_val = params[inst_at]
 
     if units == "counts":
         # Convert to counts for parameters with uM in units (described in paper)
-        param_type = np.array([x[0].lower() for x in params.index[:-1]])
-        k_RE_i = np.where(params.index[:-1] == "k_RE")[0][0]
+        param_type = np.array([x[0].lower() for x in params.index])
+        k_RE_i = np.where(params.index == "k_RE")[0][0]
         # k_RE is an exception: divide by adj_avo instead
         to_convert = np.where(param_type == "k")[0]; to_convert = np.delete(to_convert, k_RE_i)
         params[to_convert] = params[to_convert] * adj_avo; params[k_RE_i] = params[k_RE_i] / adj_avo
@@ -239,6 +237,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         max_serum = max_serum * adj_avo
         # Re-update globals
         globals().update(params)
+    print(params)
 
     X0_off = np.array(list(odeint(systems, X0_init, t, args=(0,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
     X0_on = np.array(list(odeint(systems, X0_off, t, args=(max_serum,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
