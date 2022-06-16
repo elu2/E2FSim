@@ -222,76 +222,75 @@ def df_chunker(full_df, chunks):
 
 def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.022e5):
     serum_con = np.logspace(np.log10(0.01), np.log10(max_serum), 500)
-    for i in range(param_subset.shape[0]):
-        params = param_subset.iloc[i]
+    params = param_subset.copy()
+    globals().update(params)
+    inst_at = params["an_type"]
+    inst_at_val = params[inst_at]
+
+    if units == "counts":
+        # Convert to counts for parameters with uM in units (described in paper)
+        param_type = np.array([x[0].lower() for x in params.index[:-1]])
+        k_RE_i = np.where(params.index[:-1] == "k_RE")[0][0]
+        # k_RE is an exception: divide by adj_avo instead
+        to_convert = np.where(param_type == "k")[0]; to_convert = np.delete(to_convert, k_RE_i)
+        params[to_convert] = params[to_convert] * adj_avo; params[k_RE_i] = params[k_RE_i] / adj_avo
+        # Serum is converted as well
+        serum_con = serum_con * adj_avo
+        max_serum = max_serum * adj_avo
+        # Re-update globals
         globals().update(params)
-        inst_at = params["an_type"]
-        inst_at_val = params[inst_at]
 
-        if units == "counts":
-            # Convert to counts for parameters with uM in units (described in paper)
-            param_type = np.array([x[0].lower() for x in params.index[:-1]])
-            k_RE_i = np.where(params.index[:-1] == "k_RE")[0][0]
-            # k_RE is an exception: divide by adj_avo instead
-            to_convert = np.where(param_type == "k")[0]; to_convert = np.delete(to_convert, k_RE_i)
-            params[to_convert] = params[to_convert] * adj_avo; params[k_RE_i] = params[k_RE_i] / adj_avo
-            # Serum is converted as well
-            serum_con = serum_con * adj_avo
-            max_serum = max_serum * adj_avo
-            # Re-update globals
-            globals().update(params)
+    X0_off = np.array(list(odeint(systems, X0_init, t, args=(0,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
+    X0_on = np.array(list(odeint(systems, X0_off, t, args=(max_serum,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
 
-        X0_off = np.array(list(odeint(systems, X0_init, t, args=(0,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
-        X0_on = np.array(list(odeint(systems, X0_off, t, args=(max_serum,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)))[-1]
+    set_dict = param_subset.to_dict()
+    row_vals = list(set_dict.values())
 
-        set_dict = param_subset.iloc[i].to_dict()
-        row_vals = list(set_dict.values())
+    EE_SS_on = []
+    EE_SS_off = []
 
-        EE_SS_on = []
-        EE_SS_off = []
+    # Run simulation
+    for S in serum_con:
+        psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
+        qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
 
-        # Run simulation
-        for S in serum_con:
-            psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
-            qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
+        EE_SS_on.append(psol[-1, 3])
+        EE_SS_off.append(qsol[-1, 3])
 
-            EE_SS_on.append(psol[-1, 3])
-            EE_SS_off.append(qsol[-1, 3])
+    # Revert species values and serum to pre-adjusted values
+    if units == "counts":
+        EE_SS_on = np.array(EE_SS_on) / adj_avo
+        EE_SS_off = np.array(EE_SS_off) / adj_avo
+        serum_con = serum_con / adj_avo
 
-        # Revert species values and serum to pre-adjusted values
-        if units == "counts":
-            EE_SS_on = np.array(EE_SS_on) / adj_avo
-            EE_SS_off = np.array(EE_SS_off) / adj_avo
-            serum_con = serum_con / adj_avo
+    EE_SS_on = np.around(EE_SS_on, decimals)
+    EE_SS_off = np.around(EE_SS_off, decimals)
 
-        EE_SS_on = np.around(EE_SS_on, decimals)
-        EE_SS_off = np.around(EE_SS_off, decimals)
+    # Steady state
+    off_SS = EE_SS_off[-1]
 
-        # Steady state
-        off_SS = EE_SS_off[-1]
+    # Calculate properties of the system
+    switch = calc_switch(EE_SS_off, serum_con)
+    resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
-        # Calculate properties of the system
-        switch = calc_switch(EE_SS_off, serum_con)
-        resettable = calc_resettable(EE_SS_off, EE_SS_on)
+    # Calculate the thresholds of activation/deactivation
+    hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0.05*max(EE_SS_off)+1e-3)
+    if dhm is not None:
+        bistable = dhm > 0.2
+    else:
+        bistable = False
 
-        # Calculate the thresholds of activation/deactivation
-        hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0.05*max(EE_SS_off)+1e-3)
-        if dhm is not None:
-            bistable = dhm > 0.2
-        else:
-            bistable = False
+    if hm_off is not None:
+        sound = (hm_off >= 0.5) & (hm_off <= 10)
+    else:
+        sound = False
 
-        if hm_off is not None:
-            sound = (hm_off >= 0.5) & (hm_off <= 10)
-        else:
-            sound = False
+    row_vals.extend([switch, bistable, resettable,
+                    sound, hm_on, hm_off, dhm, off_SS])
 
-        row_vals.extend([switch, bistable, resettable,
-                        sound, hm_on, hm_off, dhm, off_SS])
-
-        with open(f"./pre_seed_results.csv", 'a+', newline='') as file:
-            csv_writer = csv.writer(file)
-            csv_writer.writerow(row_vals)
+    with open(f"./pre_seed_results.csv", 'a+', newline='') as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(row_vals)
 
 
 def powspace(start, stop, power, num):
