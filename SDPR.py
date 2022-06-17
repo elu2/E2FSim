@@ -278,4 +278,4 @@ depth_params = pd.read_csv(f"./depthParams/DP{array_index}.csv")
 
 dfs = df_chunker(depth_params, 180)
 
-Parallel(n_jobs=-1)(delayed(run_sim)(depth_params.iloc[i], units="counts") for i in range(depth_params.shape[0]))
+Parallel(n_jobs=-1)(delayed(run_sim)(depth_params.iloc[i], units="counts", adj_avo=adj_avo) for i in range(depth_params.shape[0]))
