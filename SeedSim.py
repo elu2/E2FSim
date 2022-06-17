@@ -323,4 +323,4 @@ if units == "counts":
 
 pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")
 
-Parallel(n_jobs=-1)(delayed(run_sim)(pre_seed_sets.iloc[i], units="counts") for i in range(pre_seed_sets.shape[0]))
+Parallel(n_jobs=-1)(delayed(run_sim)(pre_seed_sets.iloc[i], units="counts", adj_avo=adj_avo) for i in range(pre_seed_sets.shape[0]))
