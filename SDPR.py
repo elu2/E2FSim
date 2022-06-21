@@ -174,7 +174,7 @@ def powspace(start, stop, power, num):
 # param_subset: a dictionary of parameters and analysis focus
 # decimals: many calculations depend on operations with a tolerance. Rounding standardizes a tolerance of 1e-{decimal}
 
-def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100, adj_avo=6.022e5):
+def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100, adj_avo=6.022e5, SS_tol=1e-6):
     serum_con = np.logspace(np.log10(0.01), np.log10(max_serum), 500)
     params = param_subset.copy()
     globals().update(params)
@@ -191,6 +191,8 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
         # Serum is converted as well
         serum_con = serum_con * adj_avo
         max_serum = max_serum * adj_avo
+        # Tolerate more noise in steady state (borderline for making a count difference)
+        SS_tol = 0.5
         # Re-update globals
         globals().update(params)
 
@@ -202,11 +204,15 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
 
     EE_SS_on = []
     EE_SS_off = []
+    stable = True
 
     # Run simulation
     for S in serum_con:
         psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
         qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
+
+        if abs(qsol[-2] - qsol[-1]) > SS_tol or abs(psol[-2] - psol[-1]) > SS_tol:
+            stable = False
 
         EE_SS_on.append(psol[-1, 3])
         EE_SS_off.append(qsol[-1, 3])
@@ -245,7 +251,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
         sound = False
 
     row_vals.extend([switch, bistable, resettable,
-                    sound, hm_on, hm_off, dhm, off_SS])
+                    sound, hm_on, hm_off, dhm, off_SS, stable])
 
     with open(f"./depthRuns/DR{array_index}.csv", 'a+', newline='') as file:
         csv_writer = csv.writer(file)

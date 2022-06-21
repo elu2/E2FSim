@@ -8,7 +8,7 @@ def lognuniform(low=0, high=1, size=None, base=10):
 
 # Initialize empty file for parameter sets when analyzing bistability
 col_names = ['k_E', 'k_M', 'k_CD', 'k_CDS', 'k_R', 'k_RE', 'k_b', 'k_CE', 'k_I', 'k_P1', 'k_P2', 'k_DP', 'd_M', 'd_E', 'd_CD', 'd_CE', 'd_R', 'd_RP', 'd_RE', 'd_I', 'K_S', 'K_M', 'K_E', 'K_CD', 'K_CE', 'K_RP', 'K_P1', 'K_P2',
-             'switch', 'bistable', 'resettable', 'sound', 'on_thresh', 'off_thresh', 'd_thresh', 'off_SS']
+             'switch', 'bistable', 'resettable', 'sound', 'on_thresh', 'off_thresh', 'd_thresh', 'off_SS', 'stable']
 pd.DataFrame(columns=col_names).to_csv(f"./pre_seed_results.csv", index=False)
 
 
