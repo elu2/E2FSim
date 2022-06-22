@@ -248,7 +248,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
 
     EE_SS_on = []
     EE_SS_off = []
-    stable = True
+    unstable = 0
 
     # Run simulation
     for S in serum_con:
@@ -256,7 +256,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
 
         if abs(qsol[-2, 3] - qsol[-1, 3]) > SS_tol or abs(psol[-2, 3] - psol[-1, 3]) > SS_tol:
-            stable = False
+            unstable += 1
 
         EE_SS_on.append(psol[-1, 3])
         EE_SS_off.append(qsol[-1, 3])
@@ -288,6 +288,8 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         sound = (hm_off >= 0.5) & (hm_off <= 10)
     else:
         sound = False
+
+    stable = unstable <= 5
 
     row_vals.extend([switch, bistable, resettable,
                     sound, hm_on, hm_off, dhm, off_SS, stable])
