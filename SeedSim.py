@@ -255,7 +255,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
         qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
 
-        if abs(qsol[-2] - qsol[-1]) > SS_tol or abs(psol[-2] - psol[-1]) > SS_tol:
+        if abs(qsol[-2, 3] - qsol[-1, 3]) > SS_tol or abs(psol[-2, 3] - psol[-1, 3]) > SS_tol:
             stable = False
 
         EE_SS_on.append(psol[-1, 3])
