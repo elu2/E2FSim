@@ -2,12 +2,11 @@
 
 #SBATCH --job-name=SDPR
 #SBATCH --mincpus=94
-#SBATCH --ntasks=1
-#SBATCH --mem=5GB
+#SBATCH --mem-per-cpu=6GB
 #SBATCH --time=4:00:00
 #SBATCH --partition=standard
 #SBATCH --account=
-#SBATCH --array 0-99
+#SBATCH --array=0-99
 
 cd /xdisk/guangyao/elu2/E2FSim/
 

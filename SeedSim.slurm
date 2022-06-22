@@ -2,8 +2,7 @@
 
 #SBATCH --job-name=SeedSim
 #SBATCH --mincpus=94
-#SBATCH --ntasks=1
-#SBATCH --mem=24GB
+#SBATCH --mem-per-cpu=6GB
 #SBATCH --time=16:00:00
 #SBATCH --partition=standard
 #SBATCH --account=
