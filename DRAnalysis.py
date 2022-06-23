@@ -1,3 +1,6 @@
+# DR Analaysis: get fold changes and perturbation point of two-fold change for each seeding parameter set
+# Required files: seed_set.csv, DRXXX.csv from depthRuns
+
 import pandas as pd
 import numpy as np
 import os
