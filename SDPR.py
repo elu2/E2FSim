@@ -51,7 +51,7 @@ def systems(X, t, S):
     return [dMdt, dCDdt, dCEdt, dEdt, dRdt, dRPdt, dREdt, dIdt]
 
 
-def calc_switch(EE_SS_off, serum_con, threshold=0.1):
+def calc_switch(EE_SS_off, threshold=0.1):
     d_min_max = max(EE_SS_off) - min(EE_SS_off)
     if d_min_max > threshold:
         return True
@@ -192,7 +192,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
         serum_con = serum_con * adj_avo
         max_serum = max_serum * adj_avo
         # Tolerate more noise in steady state (borderline for making a count difference)
-        SS_tol = 0.5
+        SS_tol = 50
         # Re-update globals
         globals().update(params)
 
@@ -204,6 +204,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
 
     EE_SS_on = []
     EE_SS_off = []
+    serum_pass = []
     unstable = 0
 
     # Run simulation
@@ -213,9 +214,11 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
 
         if abs(qsol[-2, 3] - qsol[-1, 3]) > SS_tol or abs(psol[-2, 3] - psol[-1, 3]) > SS_tol:
             unstable += 1
+            continue
 
         EE_SS_on.append(psol[-1, 3])
         EE_SS_off.append(qsol[-1, 3])
+        serum_pass.append(S)
 
     if int(array_index) < n_retain:
         data_df = pd.DataFrame({"on": EE_SS_on, "off": EE_SS_off})
@@ -225,7 +228,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
     if units == "counts":
         EE_SS_on = np.array(EE_SS_on) / adj_avo
         EE_SS_off = np.array(EE_SS_off) / adj_avo
-        serum_con = serum_con / adj_avo
+        serum_pass = serum_pass / adj_avo
 
     EE_SS_on = np.around(EE_SS_on, decimals)
     EE_SS_off = np.around(EE_SS_off, decimals)
@@ -234,11 +237,11 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
     off_SS = EE_SS_off[-1]
 
     # Calculate properties of the system
-    switch = calc_switch(EE_SS_off, serum_con)
+    switch = calc_switch(EE_SS_off, serum_pass)
     resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
     # Calculate the thresholds of activation/deactivation
-    hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0.05*max(EE_SS_off)+1e-3)
+    hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_pass, tolerance=0.05*max(EE_SS_off)+1e-3)
 
     if dhm is not None:
         bistable = dhm > 0.2
