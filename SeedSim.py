@@ -247,7 +247,6 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
 
     EE_SS_on = []
     EE_SS_off = []
-    serum_pass = []
     unstable = 0
 
     # Run simulation
@@ -258,17 +257,15 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         # If steady state was not reached, skip and record
         if abs(qsol[-2, 3] - qsol[-1, 3]) > SS_tol or abs(psol[-2, 3] - psol[-1, 3]) > SS_tol:
             unstable += 1
-            continue
 
         EE_SS_on.append(psol[-1, 3])
         EE_SS_off.append(qsol[-1, 3])
-        serum_pass.append(S)
 
     # Revert species values and serum to pre-adjusted values
     if units == "counts":
         EE_SS_on = np.array(EE_SS_on) / adj_avo
         EE_SS_off = np.array(EE_SS_off) / adj_avo
-        serum_pass = serum_pass / adj_avo
+        serum_con = serum_con / adj_avo
 
     EE_SS_on = np.around(EE_SS_on, decimals)
     EE_SS_off = np.around(EE_SS_off, decimals)
@@ -277,7 +274,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
     off_SS = EE_SS_off[-1]
 
     # Calculate properties of the system
-    switch = calc_switch(EE_SS_off, serum_pass)
+    switch = calc_switch(EE_SS_off, serum_con)
     resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
     # Calculate the thresholds of activation/deactivation
@@ -335,6 +332,6 @@ if units == "counts":
     X0_init = np.array(X0_init) * adj_avo
     serum_con = serum_con * adj_avo
 
-pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")
+pre_seed_sets = pd.read_csv("./pre_seed_sets.csv")#.iloc[PLACEHOLDER]
 
 Parallel(n_jobs=-1)(delayed(run_sim)(pre_seed_sets.iloc[i], units="counts", adj_avo=adj_avo) for i in range(pre_seed_sets.shape[0]))
