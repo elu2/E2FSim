@@ -220,6 +220,8 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
         EE_SS_off.append(qsol[-1, 3])
         serum_pass.append(S)
 
+    serum_pass = np.array(serum_pass)
+
     if int(array_index) < n_retain:
         data_df = pd.DataFrame({"on": EE_SS_on, "off": EE_SS_off})
         data_df.to_csv(f"./retainedData/DR{array_index}/{inst_at}-{inst_at_val}.csv", index=False)
