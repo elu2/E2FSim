@@ -239,7 +239,7 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, n_retain=100
     off_SS = EE_SS_off[-1]
 
     # Calculate properties of the system
-    switch = calc_switch(EE_SS_off, serum_pass)
+    switch = calc_switch(EE_SS_off)
     resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
     # Calculate the thresholds of activation/deactivation
