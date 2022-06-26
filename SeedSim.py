@@ -9,6 +9,7 @@ import pandas as pd
 import os
 import sys
 
+
 params = {
     "k_E": 0.4,
     "k_M": 1.0,
@@ -103,7 +104,7 @@ def subfinder(l, sl):
     return results
 
 
-def calc_switch(EE_SS_off, threshold=0.1):
+def calc_switch(EE_SS_off, serum_con, threshold=0.1):
     d_min_max = max(EE_SS_off) - min(EE_SS_off)
     if d_min_max > threshold:
         return True
@@ -254,7 +255,6 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
         psol = odeint(systems, X0_on, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
         qsol = odeint(systems, X0_off, t, args=(S,), hmax=0, mxstep=100000, rtol=1e-6, atol=1e-12)
 
-        # If steady state was not reached, skip and record
         if abs(qsol[-2, 3] - qsol[-1, 3]) > SS_tol or abs(psol[-2, 3] - psol[-1, 3]) > SS_tol:
             unstable += 1
 
@@ -278,26 +278,22 @@ def run_sim(param_subset, units="counts", max_serum=50, decimals=6, adj_avo=6.02
     resettable = calc_resettable(EE_SS_off, EE_SS_on)
 
     # Calculate the thresholds of activation/deactivation
-    hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_pass, tolerance=0.05*max(EE_SS_off)+1e-3)
-    
-    # Calculate if bistable
+    hm_off, hm_on, dhm = act_deact(EE_SS_off, EE_SS_on, serum_con, tolerance=0.05*max(EE_SS_off)+1e-3)
     if dhm is not None:
         bistable = dhm > 0.2
     else:
         bistable = False
 
-    # Calculate if feasible threshold
     if hm_off is not None:
         sound = (hm_off >= 0.5) & (hm_off <= 10)
     else:
         sound = False
-    
-    # Calculate if stable (unused)
+
     stable = unstable <= 5
 
     row_vals.extend([switch, bistable, resettable,
                     sound, hm_on, hm_off, dhm, off_SS, stable])
-    
+
     with open(f"./pre_seed_results.csv", 'a+', newline='') as file:
         csv_writer = csv.writer(file)
         csv_writer.writerow(row_vals)
